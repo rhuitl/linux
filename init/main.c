@@ -79,6 +79,10 @@
 #include <asm/smp.h>
 #endif
 
+#ifdef CONFIG_ZSWAN_DEBUG_UART
+#include <mach/debug_uart.h>
+#endif
+
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -470,6 +474,11 @@ asmlinkage void __init start_kernel(void)
 	extern const struct kernel_param __start___param[], __stop___param[];
 
 	smp_setup_processor_id();
+
+#ifdef CONFIG_ZSWAN_DEBUG_UART
+	Uart_Init();
+	Uart_Put_String("In start_kernel, start init uart0---->");
+#endif
 
 	/*
 	 * Need to run as early as possible, to initialize the

@@ -44,6 +44,10 @@
 
 #include <asm/uaccess.h>
 
+#ifdef CONFIG_ZSWAN_DEBUG_UART
+#include <mach/debug_uart.h>
+#endif
+
 /*
  * Architectures can override it:
  */
@@ -876,6 +880,9 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	printed_len += vscnprintf(printk_buf + printed_len,
 				  sizeof(printk_buf) - printed_len, fmt, args);
 
+#ifdef CONFIG_ZSWAN_DEBUG_UART
+	Uart_Put_String(printk_buf);
+#endif
 	p = printk_buf;
 
 	/* Read log level and handle special printk prefix */
