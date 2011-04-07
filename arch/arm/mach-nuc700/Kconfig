@@ -1,0 +1,55 @@
+if ARCH_NUC700
+
+config CPU_NUC710
+	bool
+	help
+	  Support for NUC710 of Nuvoton NUC700 CPUs.
+
+config CPU_NUC740
+	bool
+	help
+	  Support for NUC740 of Nuvoton NUC700 CPUs.
+
+config CPU_NUC745
+	bool
+	help
+	  Support for NUC745 of Nuvoton NUC700 CPUs.
+
+config ZSWAN_DEBUG_UART
+	bool "For zswan porting kernel use debug uart0!"
+	help
+	  If you doubt serial driver is not ok for debug other driver,
+	  you can use this option to debug.
+
+menu "NUC710 Machines"
+
+config MACH_NUC710EVB
+	bool "Nuvoton NUC710 Evaluation Board"
+	default y
+	select CPU_NUC710
+	help
+	   Say Y here if you are using the Nuvoton NUC710EVB
+
+endmenu
+
+menu "NUC745 Machines"
+
+config MACH_NUC745EVB
+	bool "Nuvoton NUC745 Evaluation Board"
+	select CPU_NUC745
+	help
+	   Say Y here if you are using the Nuvoton NUC745EVB
+
+endmenu
+
+menu "NUC740 Machines"
+
+config MACH_NUC740EVB
+	bool "Nuvoton NUC740 Evaluation Board"
+	select CPU_NUC740
+	help
+	   Say Y here if you are using the Nuvoton NUC740EVB
+
+endmenu
+
+endif

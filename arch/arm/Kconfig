@@ -594,6 +594,20 @@ config ARCH_NUC93X
 	  Support for Nuvoton (Winbond logic dept.) NUC93X MCU,The NUC93X is a
 	  low-power and high performance MPEG-4/JPEG multimedia controller chip.
 
+config ARCH_NUC700
+	bool "Nuvoton NUC700 CPU"
+	select CPU_ARM7TDMI
+	select ARCH_REQUIRE_GPIOLIB
+	select CLKDEV_LOOKUP
+	select ARCH_USES_GETTIMEOFFSET
+	help
+	  Support for Nuvoton (Winbond logic dept.) ARM7 processor,
+	  At present, regarding the ARM series product line, you can
+	  login the following link address to know more.
+
+	  <http://www.nuvoton.com/hq/enu/ProductAndSales/ProductLines/
+		ConsumerElectronicsIC/ARMMicrocontroller/ARMMicrocontroller>
+
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CLKDEV_LOOKUP
@@ -980,6 +994,8 @@ source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/plat-nomadik/Kconfig"
 
 source "arch/arm/mach-nuc93x/Kconfig"
+
+source "arch/arm/mach-nuc700/Kconfig"
 
 source "arch/arm/plat-omap/Kconfig"
 
