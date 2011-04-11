@@ -68,11 +68,33 @@ struct platform_device nuc700_device_rtc = {
 	.resource	= nuc700_rtc_resource,
 };
 
+/* OHCI controller*/
+
+static struct resource nuc700_ohci_resource[] = {
+	[0] = {
+		.start = NUC700_PA_USBH,
+		.end   = NUC700_PA_USBH + NUC700_SZ_USBH -1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_USBH0,
+		.end   = IRQ_USBH0,
+		.flags = IORESOURCE_IRQ,
+	},
+};
+
+struct platform_device nuc700_device_ohci = {
+	.name		= "nuc700-ohci",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(nuc700_ohci_resource),
+	.resource	= nuc700_ohci_resource,
+};
 
 /*Here should be your evb resourse,such as LCD*/
 
 static struct platform_device *nuc700_public_dev[] __initdata = {
 	&nuc700_serial_device,
+	&nuc700_device_ohci,
 };
 
 /* Provide adding specific CPU platform devices API */
