@@ -34,6 +34,7 @@
 
 #include <mach/regs-serial.h>
 #include <mach/map.h>
+#include <mach/nuc700_keypad.h>
 
 #include "cpu.h"
 
@@ -122,12 +123,72 @@ static struct platform_device nuc700_device_emc = {
 	}
 };
 
+/* KPI controller*/
+
+static int nuc700_keymap[] = {
+	KEY(0, 0, KEY_A),
+	KEY(0, 1, KEY_B),
+	KEY(0, 2, KEY_C),
+	KEY(0, 3, KEY_D),
+
+	KEY(1, 0, KEY_E),
+	KEY(1, 1, KEY_F),
+	KEY(1, 2, KEY_G),
+	KEY(1, 3, KEY_H),
+
+	KEY(2, 0, KEY_I),
+	KEY(2, 1, KEY_J),
+	KEY(2, 2, KEY_K),
+	KEY(2, 3, KEY_L),
+
+	KEY(3, 0, KEY_M),
+	KEY(3, 1, KEY_N),
+	KEY(3, 2, KEY_O),
+	KEY(3, 3, KEY_P),
+};
+
+static struct matrix_keymap_data nuc700_map_data = {
+	.keymap			= nuc700_keymap,
+	.keymap_size		= ARRAY_SIZE(nuc700_keymap),
+};
+
+struct nuc700_keypad_platform_data nuc700_keypad_info = {
+	.keymap_data	= &nuc700_map_data,
+	.prescale	= 0xfa,
+	.debounce	= 0x50,
+};
+
+static struct resource nuc700_kpi_resource[] = {
+	[0] = {
+		.start = NUC700_PA_KPI,
+		.end   = NUC700_PA_KPI + NUC700_SZ_KPI - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_KPI,
+		.end   = IRQ_KPI,
+		.flags = IORESOURCE_IRQ,
+	}
+
+};
+
+struct platform_device nuc700_device_kpi = {
+	.name		= "nuc700-kpi",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(nuc700_kpi_resource),
+	.resource	= nuc700_kpi_resource,
+	.dev		= {
+				.platform_data = &nuc700_keypad_info,
+			}
+};
+
 /*Here should be your evb resourse,such as LCD*/
 
 static struct platform_device *nuc700_public_dev[] __initdata = {
 	&nuc700_serial_device,
 	&nuc700_device_ohci,
 	&nuc700_device_emc,
+	&nuc700_device_kpi,
 };
 
 /* Provide adding specific CPU platform devices API */
