@@ -35,6 +35,7 @@
 #include <mach/regs-serial.h>
 #include <mach/map.h>
 #include <mach/nuc700_keypad.h>
+#include <mach/nuc700_spi.h>
 
 #include "cpu.h"
 
@@ -182,6 +183,71 @@ struct platform_device nuc700_device_kpi = {
 			}
 };
 
+/* SPI device */
+
+static struct nuc700_spi_info nuc700_spiflash_data = {
+        .num_cs		= 1,
+        .lsb		= 0,
+        .txneg		= 1,
+        .rxneg		= 0,
+        .divider	= 24,
+        .sleep		= 0,
+        .txnum		= 0,
+        .txbitlen	= 8,
+        .bus_num	= 0,
+};
+
+static struct resource nuc700_spi_resource[] = {
+        [0] = {
+                .start = NUC700_PA_I2C + NUC700_SZ_I2C,
+                .end   = NUC700_PA_I2C + NUC700_SZ_I2C  - 1,
+                .flags = IORESOURCE_MEM,
+        },
+        [1] = {
+                .start = IRQ_SPI,
+                .end   = IRQ_SPI,
+                .flags = IORESOURCE_IRQ,
+        }
+};
+
+static struct platform_device nuc700_device_spi = {
+        .name		= "nuc700-spi",
+        .id		= -1,
+        .num_resources	= ARRAY_SIZE(nuc700_spi_resource),
+        .resource	= nuc700_spi_resource,
+        .dev		= {
+                .platform_data = &nuc700_spiflash_data,
+        }
+};
+
+/* spi device, spi flash info */
+
+static struct mtd_partition nuc700_spi_flash_partitions[] = {
+        {
+                .name = "SPI flash",
+                .size = 0x0400000,
+                .offset = 0,
+        },
+};
+
+static struct flash_platform_data nuc700_spi_flash_data = {
+        .name = "m25p80",
+        .parts =  nuc700_spi_flash_partitions,
+        .nr_parts = ARRAY_SIZE(nuc700_spi_flash_partitions),
+        .type = "mx25l3205d",
+};
+
+static struct spi_board_info nuc700_spi_board_info[] __initdata = {
+        {
+                .modalias = "m25p80",
+                .max_speed_hz = 20000000,
+                .bus_num = 0,
+                .chip_select = 0,
+                .platform_data = &nuc700_spi_flash_data,
+                .mode = SPI_MODE_0,
+        },
+};
+
 /*Here should be your evb resourse,such as LCD*/
 
 static struct platform_device *nuc700_public_dev[] __initdata = {
@@ -189,6 +255,7 @@ static struct platform_device *nuc700_public_dev[] __initdata = {
 	&nuc700_device_ohci,
 	&nuc700_device_emc,
 	&nuc700_device_kpi,
+	&nuc700_device_spi,
 };
 
 /* Provide adding specific CPU platform devices API */
@@ -197,5 +264,7 @@ void __init nuc700_board_init(struct platform_device **device, int size)
 {
 	platform_add_devices(device, size);
 	platform_add_devices(nuc700_public_dev, ARRAY_SIZE(nuc700_public_dev));
+	spi_register_board_info(nuc700_spi_board_info,
+                                ARRAY_SIZE(nuc700_spi_board_info));
 }
 

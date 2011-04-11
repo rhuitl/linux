@@ -380,6 +380,13 @@ config SPI_NUC900
 	help
 	  SPI driver for Nuvoton NUC900 series ARM SoCs
 
+config SPI_NUC700
+	tristate "Nuvoton NUC700 series SPI"
+	depends on ARCH_NUC700 && EXPERIMENTAL
+	select SPI_BITBANG
+	help
+	  SPI driver for Nuvoton NUC700 series ARM SoCs
+
 #
 # Add new SPI master controllers in alphabetical order above this line
 #
