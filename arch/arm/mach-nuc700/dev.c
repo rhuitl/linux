@@ -90,11 +90,44 @@ struct platform_device nuc700_device_ohci = {
 	.resource	= nuc700_ohci_resource,
 };
 
+/* MAC device */
+
+static struct resource nuc700_emc_resource[] = {
+	[0] = {
+		.start = NUC700_PA_EMAC,
+		.end   = NUC700_PA_EMAC + NUC700_SZ_EMAC - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_EMCTX,
+		.end   = IRQ_EMCTX,
+		.flags = IORESOURCE_IRQ,
+	},
+	[2] = {
+		.start = IRQ_EMCRX,
+		.end   = IRQ_EMCRX,
+		.flags = IORESOURCE_IRQ,
+	}
+};
+
+static u64 nuc700_device_emc_dmamask = 0xffffffffUL;
+static struct platform_device nuc700_device_emc = {
+	.name		= "nuc700-emc",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(nuc700_emc_resource),
+	.resource	= nuc700_emc_resource,
+	.dev              = {
+		.dma_mask = &nuc700_device_emc_dmamask,
+		.coherent_dma_mask = 0xffffffffUL
+	}
+};
+
 /*Here should be your evb resourse,such as LCD*/
 
 static struct platform_device *nuc700_public_dev[] __initdata = {
 	&nuc700_serial_device,
 	&nuc700_device_ohci,
+	&nuc700_device_emc,
 };
 
 /* Provide adding specific CPU platform devices API */

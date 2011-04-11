@@ -37,12 +37,12 @@
 
 static inline dma_addr_t __virt_to_lbus(unsigned long x)
 {
-	return (dma_addr_t)(x + NUC700_MM_P_NOCACHE_START);
+	return (dma_addr_t)(x | NUC700_MM_P_NOCACHE_START);
 }
 
 static inline unsigned long __lbus_to_virt(dma_addr_t x)
 {
-	return (unsigned long)(x - NUC700_MM_P_NOCACHE_START);
+	return (unsigned long)(x & ~NUC700_MM_P_NOCACHE_START);
 }
 
 #define __is_lbus_dma(a)				\

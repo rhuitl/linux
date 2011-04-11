@@ -27,4 +27,12 @@
 #define __mem_pci(a)	(a)
 #define __io(a)		__typesafe_io(a)
 
+static inline void __iomem *__arch_ioremap(unsigned long cookie, size_t size,
+					   unsigned int flags)
+{
+	return (void __iomem *)(cookie | 0x80000000);
+}
+
+#define __arch_ioremap		__arch_ioremap
+#define __arch_iounmap(cookie)	do { } while (0)
 #endif

@@ -21,7 +21,7 @@
 #include <asm/io.h>
 
 /****************************************************************************/
-
+#if 0
 extern char _ebss;
 
 struct map_info uclinux_ram_map = {
@@ -29,7 +29,13 @@ struct map_info uclinux_ram_map = {
 	.phys = (unsigned long)&_ebss,
 	.size = 0,
 };
-
+#else
+struct map_info uclinux_ram_map = {
+	.name = "RAM",
+	.phys = (unsigned long)CONFIG_DRAM_SIZE,
+	.size = 0,
+};
+#endif
 static struct mtd_info *uclinux_ram_mtdinfo;
 
 /****************************************************************************/
