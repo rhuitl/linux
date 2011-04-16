@@ -52,7 +52,20 @@ ENTRY(stext)
 	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
 	movs	r10, r5				@ invalid processor (r5=0)?
 	beq	__error_p				@ yes, error 'p'
-
+#ifdef CCONFIG_CPU_NUC710
+	mov      r1, #0xd00
+	add      r1, r1, #0x70
+#endif
+#ifdef CCONFIG_CPU_NUC740
+	mov      r1, #0xd00
+	add      r1, r1, #0x70
+	add      r1, r1, #0x01
+#endif
+#ifdef CCONFIG_CPU_NUC745
+	mov      r1, #0xd00
+	add      r1, r1, #0x70
+	add      r1, r1, #0x02
+#endif
 	adr	lr, BSYM(__after_proc_init)	@ return (PIC) address
  ARM(	add	pc, r10, #PROCINFO_INITFUNC	)
  THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)
