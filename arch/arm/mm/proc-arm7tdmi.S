@@ -72,6 +72,7 @@ __arm7tdmi_setup:
 		string	cpu_s3c4510b_name, "Samsung-S3C4510B"
 		string	cpu_s3c4530_name, "Samsung-S3C4530"
 		string	cpu_netarm_name, "NETARM"
+		string	cpu_nuc700_name, "Nuvoton-nuc700"
 
 		.align
 
@@ -111,3 +112,5 @@ __\name\()_proc_info:
 			cpu_s3c3410_name, extra_hwcaps=HWCAP_THUMB
 		arm7tdmi_proc_info s3c44b0x, 0x44b00000, 0xffff0000, \
 			cpu_s3c44b0x_name, extra_hwcaps=HWCAP_THUMB
+		arm7tdmi_proc_info nuc700, 0x41807000, 0xfff8f000, \
+			cpu_nuc700_name, extra_hwcaps=HWCAP_THUMB
