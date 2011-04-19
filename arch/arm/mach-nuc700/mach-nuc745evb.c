@@ -19,23 +19,23 @@
 
 #include "nuc745.h"
 
-static void __init nuc745evb_init_first(void)
+static void __init nuc745evb_init_board(void)
+{
+	nuc745_board_init();
+}
+
+static void __init nuc745evb_init(void)
 {
 	nuc745_read_id();
 	nuc745_init_clocks();
 	nuc745_gpio_init();
 }
 
-static void __init nuc745evb_init(void)
-{
-	nuc745evb_init_first();
-	nuc745_board_init();
-}
-
 MACHINE_START(NUC745EVB, "NUC745EVB")
 	/* Maintainer: Wan ZongShun */
 	.boot_params	= 0,
 	.init_irq	= nuc700_init_irq,
-	.init_machine	= nuc745evb_init,
+	.init_machine	= nuc745evb_init_board,
+	.init_early		= nuc745evb_init,
 	.timer		= &nuc700_timer,
 MACHINE_END

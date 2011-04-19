@@ -18,6 +18,7 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
+#include <linux/serial_8250.h>
 #include <linux/slab.h>
 
 #include <linux/mtd/physmap.h>
@@ -48,28 +49,6 @@
  * static.
 */
 
-/* RTC controller*/
-
-static struct resource nuc700_rtc_resource[] = {
-	[0] = {
-		.start = NUC700_PA_RTC,
-		.end   = NUC700_PA_RTC + NUC700_SZ_RTC -1,
-		.flags = IORESOURCE_MEM,
-	},
-	[1] = {
-		.start = IRQ_RTC,
-		.end   = IRQ_RTC,
-		.flags = IORESOURCE_IRQ,
-	},
-};
-
-struct platform_device nuc700_device_rtc = {
-	.name		= "nuc700-rtc",
-	.id		= -1,
-	.num_resources	= ARRAY_SIZE(nuc700_rtc_resource),
-	.resource	= nuc700_rtc_resource,
-};
-
 /* OHCI controller*/
 
 static struct resource nuc700_ohci_resource[] = {
@@ -83,13 +62,6 @@ static struct resource nuc700_ohci_resource[] = {
 		.end   = IRQ_USBH0,
 		.flags = IORESOURCE_IRQ,
 	},
-};
-
-struct platform_device nuc700_device_ohci = {
-	.name		= "nuc700-ohci",
-	.id		= -1,
-	.num_resources	= ARRAY_SIZE(nuc700_ohci_resource),
-	.resource	= nuc700_ohci_resource,
 };
 
 /* MAC device */
@@ -113,16 +85,6 @@ static struct resource nuc700_emc_resource[] = {
 };
 
 static u64 nuc700_device_emc_dmamask = 0xffffffffUL;
-static struct platform_device nuc700_device_emc = {
-	.name		= "nuc700-emc",
-	.id		= -1,
-	.num_resources	= ARRAY_SIZE(nuc700_emc_resource),
-	.resource	= nuc700_emc_resource,
-	.dev              = {
-		.dma_mask = &nuc700_device_emc_dmamask,
-		.coherent_dma_mask = 0xffffffffUL
-	}
-};
 
 /* KPI controller*/
 
@@ -173,16 +135,6 @@ static struct resource nuc700_kpi_resource[] = {
 
 };
 
-struct platform_device nuc700_device_kpi = {
-	.name		= "nuc700-kpi",
-	.id		= -1,
-	.num_resources	= ARRAY_SIZE(nuc700_kpi_resource),
-	.resource	= nuc700_kpi_resource,
-	.dev		= {
-				.platform_data = &nuc700_keypad_info,
-			}
-};
-
 /* SPI device */
 
 static struct nuc700_spi_info nuc700_spiflash_data = {
@@ -207,16 +159,6 @@ static struct resource nuc700_spi_resource[] = {
                 .start = IRQ_SPI,
                 .end   = IRQ_SPI,
                 .flags = IORESOURCE_IRQ,
-        }
-};
-
-static struct platform_device nuc700_device_spi = {
-        .name		= "nuc700-spi",
-        .id		= -1,
-        .num_resources	= ARRAY_SIZE(nuc700_spi_resource),
-        .resource	= nuc700_spi_resource,
-        .dev		= {
-                .platform_data = &nuc700_spiflash_data,
         }
 };
 
@@ -248,22 +190,38 @@ static struct spi_board_info nuc700_spi_board_info[] __initdata = {
         },
 };
 
-/*Here should be your evb resourse,such as LCD*/
+/* Initial serial platform data */
 
-static struct platform_device *nuc700_public_dev[] __initdata = {
-	&nuc700_serial_device,
-	&nuc700_device_ohci,
-	&nuc700_device_emc,
-	&nuc700_device_kpi,
-	&nuc700_device_spi,
+struct plat_serial8250_port nuc700_uart_data[] = {
+	NUC700_8250PORT(UART0),
+	{},
 };
 
 /* Provide adding specific CPU platform devices API */
 
-void __init nuc700_board_init(struct platform_device **device, int size)
+void __init nuc700_board_init(void)
 {
-	platform_add_devices(device, size);
-	platform_add_devices(nuc700_public_dev, ARRAY_SIZE(nuc700_public_dev));
+	struct platform_device * pdev;
+
+	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
+				NULL, 0, nuc700_uart_data, sizeof(nuc700_uart_data));
+
+	platform_device_register_resndata(NULL, "nuc700-ohci", -1,
+				nuc700_ohci_resource, ARRAY_SIZE(nuc700_ohci_resource) , NULL, 0);
+	
+	pdev = platform_device_register_resndata(NULL, "nuc700-emc",  -1,
+				nuc700_emc_resource, ARRAY_SIZE(nuc700_emc_resource) , NULL, 0);
+	pdev->dev.dma_mask = &nuc700_device_emc_dmamask;
+	pdev->dev.coherent_dma_mask = 0xffffffffUL;
+		
+	platform_device_register_resndata(NULL, "nuc700-kpi",  -1,
+				nuc700_kpi_resource, ARRAY_SIZE(nuc700_kpi_resource) , 
+				&nuc700_keypad_info, sizeof(nuc700_keypad_info));
+
+	platform_device_register_resndata(NULL, "nuc700-spi",  -1,
+				nuc700_spi_resource, ARRAY_SIZE(nuc700_spi_resource) , 
+				&nuc700_spiflash_data, sizeof(nuc700_spiflash_data));
+
 	spi_register_board_info(nuc700_spi_board_info,
                                 ARRAY_SIZE(nuc700_spi_board_info));
 }

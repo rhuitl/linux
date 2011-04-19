@@ -64,7 +64,7 @@ static struct irqaction nuc700_timer_irq = {
 
 static void nuc700_timer_setup(void)
 {
-	struct clk *ck_ext = clk_get(NULL, "ext");
+	struct clk *ck_ext = clk_get(NULL, "ext"); 
 	struct clk *ck_timer = clk_get(NULL, "timer");
 	unsigned int rate, val = 0;
 

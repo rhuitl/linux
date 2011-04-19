@@ -84,7 +84,7 @@ void __init nuc700_init_irq(void)
 
 	__raw_writel(0x7FFFE, REG_AIC_MDCR);
 
-	for (irqno = IRQ_WDT; irqno <= NR_IRQS; irqno++) {
+	for (irqno = IRQ_WDT; irqno < NR_IRQS; irqno++) {
 		set_irq_chip(irqno, &nuc700_irq_chip);
 		set_irq_handler(irqno, handle_level_irq);
 		set_irq_flags(irqno, IRQF_VALID);

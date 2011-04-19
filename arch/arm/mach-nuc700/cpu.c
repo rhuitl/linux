@@ -21,7 +21,6 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/io.h>
-#include <linux/serial_8250.h>
 #include <linux/delay.h>
 
 #include <asm/mach/arch.h>
@@ -66,7 +65,7 @@ static DEFINE_CLK(ext, 0);
 
 static struct clk_lookup nuc700_clkregs[] = {
 	DEF_CLKLOOK(&clk_uart0, "nuc700-uart0", NULL),
-	DEF_CLKLOOK(&clk_timer, "NULL", "timer"),
+	DEF_CLKLOOK(&clk_timer, NULL, "timer"),
 	DEF_CLKLOOK(&clk_ohci, "nuc700-ohci", NULL),
 	DEF_CLKLOOK(&clk_wdt, "nuc700-wdt", NULL),
 	DEF_CLKLOOK(&clk_emc, "nuc700-emc", NULL),
@@ -89,21 +88,6 @@ static struct clk_lookup nuc700_clkregs[] = {
 	DEF_CLKLOOK(&clk_pwm, "nuc700-pwm", NULL),
 	DEF_CLKLOOK(&clk_ps2, "nuc700-ps2", NULL),
 	DEF_CLKLOOK(&clk_ext, NULL, "ext"),
-};
-
-/* Initial serial platform data */
-
-struct plat_serial8250_port nuc700_uart_data[] = {
-	NUC700_8250PORT(UART0),
-	{},
-};
-
-struct platform_device nuc700_serial_device = {
-	.name			= "serial8250",
-	.id			= PLAT8250_DEV_PLATFORM,
-	.dev			= {
-		.platform_data	= nuc700_uart_data,
-	},
 };
 
 /*Init NUC700 evb read id*/

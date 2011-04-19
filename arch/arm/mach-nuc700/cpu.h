@@ -39,7 +39,7 @@
 extern void nuc700_clock_source(struct device *dev, unsigned char *src);
 extern void nuc700_init_clocks(void);
 extern void nuc700_read_id(void);
-extern void nuc700_board_init(struct platform_device **device, int size);
+extern void nuc700_board_init(void);
 extern void nuc700_gpio_init(void);
 
 /* for either public between 710 and 745, or between 745 and 740 */

@@ -19,12 +19,6 @@
 #include "cpu.h"
 #include "clock.h"
 
-/* define specific CPU platform device */
-
-static struct platform_device *nuc745_dev[] __initdata = {
-	&nuc700_device_rtc,
-};
-
 /*Init NUC710 evb read id*/
 
 void __init nuc745_read_id(void)
@@ -48,5 +42,5 @@ void __init nuc745_init_clocks(void)
 
 void __init nuc745_board_init(void)
 {
-	nuc700_board_init(nuc745_dev, ARRAY_SIZE(nuc745_dev));
+	nuc700_board_init();
 }
