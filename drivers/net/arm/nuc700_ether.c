@@ -582,7 +582,7 @@ static int nuc700_ether_close(struct net_device *dev)
 	netif_stop_queue(dev);
 
 	del_timer_sync(&ether->check_timer);
-	clk_disable(ether->rmiiclk);
+	//clk_disable(ether->rmiiclk);
 	clk_disable(ether->clk);
 
 	free_irq(ether->txirq, dev);
@@ -822,9 +822,13 @@ static int nuc700_ether_open(struct net_device *dev)
 	nuc700_set_global_maccmd(dev);
 	nuc700_enable_rx(dev, 1);
 
-	clk_enable(ether->rmiiclk);
+	//clk_enable(ether->rmiiclk);
 	clk_enable(ether->clk);
 
+	*(unsigned int volatile *)(0xfff83020) = 0x50000;
+	*(unsigned int volatile *)(0xfff83024) = 0; // make sure other pins are in input mode.
+	*(unsigned int volatile *)(0xfff83020) = 0x55555;
+	
 	ether->rx_packets = 0x0;
 	ether->rx_bytes = 0x0;
 
@@ -1033,14 +1037,7 @@ static int __devinit nuc700_ether_probe(struct platform_device *pdev)
 		error = PTR_ERR(ether->clk);
 		goto failed_free_rxirq;
 	}
-
-	ether->rmiiclk = clk_get(&pdev->dev, "RMII");
-	if (IS_ERR(ether->rmiiclk)) {
-		dev_err(&pdev->dev, "failed to get ether clock\n");
-		error = PTR_ERR(ether->rmiiclk);
-		goto failed_put_clk;
-	}
-
+	
 	ether->pdev = pdev;
 
 	nuc700_ether_setup(dev);
@@ -1049,12 +1046,10 @@ static int __devinit nuc700_ether_probe(struct platform_device *pdev)
 	if (error != 0) {
 		dev_err(&pdev->dev, "Regiter EMC nuc700 FAILED\n");
 		error = -ENODEV;
-		goto failed_put_rmiiclk;
+		goto failed_put_clk;
 	}
 
 	return 0;
-failed_put_rmiiclk:
-	clk_put(ether->rmiiclk);
 failed_put_clk:
 	clk_put(ether->clk);
 failed_free_rxirq:
@@ -1078,7 +1073,7 @@ static int __devexit nuc700_ether_remove(struct platform_device *pdev)
 
 	unregister_netdev(dev);
 
-	clk_put(ether->rmiiclk);
+	//clk_put(ether->rmiiclk);
 	clk_put(ether->clk);
 
 	iounmap(ether->reg);

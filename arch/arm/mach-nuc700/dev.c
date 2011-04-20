@@ -63,6 +63,7 @@ static struct resource nuc700_ohci_resource[] = {
 		.flags = IORESOURCE_IRQ,
 	},
 };
+static u64 nuc700_device_ohci_dmamask = 0xffffffffUL;
 
 /* MAC device */
 
@@ -206,8 +207,10 @@ void __init nuc700_board_init(void)
 	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
 				NULL, 0, nuc700_uart_data, sizeof(nuc700_uart_data));
 
-	platform_device_register_resndata(NULL, "nuc700-ohci", -1,
+	pdev = platform_device_register_resndata(NULL, "nuc700-ohci", -1,
 				nuc700_ohci_resource, ARRAY_SIZE(nuc700_ohci_resource) , NULL, 0);
+	pdev->dev.dma_mask = &nuc700_device_ohci_dmamask;
+	pdev->dev.coherent_dma_mask = 0xffffffffUL;
 	
 	pdev = platform_device_register_resndata(NULL, "nuc700-emc",  -1,
 				nuc700_emc_resource, ARRAY_SIZE(nuc700_emc_resource) , NULL, 0);
