@@ -475,11 +475,6 @@ asmlinkage void __init start_kernel(void)
 
 	smp_setup_processor_id();
 
-#ifdef CONFIG_ZSWAN_DEBUG_UART
-	Uart_Init();
-	Uart_Put_String("In start_kernel, start init uart0---->");
-#endif
-
 	/*
 	 * Need to run as early as possible, to initialize the
 	 * lockdep hash:
@@ -506,13 +501,6 @@ asmlinkage void __init start_kernel(void)
 	page_address_init();
 	printk(KERN_NOTICE "%s", linux_banner);
 	setup_arch(&command_line);
-
-#ifdef CONFIG_ZSWAN_DEBUG_UART
-	Uart_Init();
-	Uart_Put_String("setup_arch finished---->");
-#endif
-
-	
 	mm_init_owner(&init_mm, &init_task);
 	mm_init_cpumask(&init_mm);
 	setup_command_line(command_line);
@@ -522,12 +510,6 @@ asmlinkage void __init start_kernel(void)
 
 	build_all_zonelists(NULL);
 	page_alloc_init();
-
-#ifdef CONFIG_ZSWAN_DEBUG_UART
-	Uart_Init();
-	Uart_Put_String("page_alloc_init---->");
-#endif
-
 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,

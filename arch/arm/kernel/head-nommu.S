@@ -66,6 +66,11 @@ ENTRY(stext)
 	add      r1, r1, #0x70
 	add      r1, r1, #0x02
 #endif
+
+	bl	close_cache
+	bl	flush_cache
+	bl	open_cache
+
 	adr	lr, BSYM(__after_proc_init)	@ return (PIC) address
  ARM(	add	pc, r10, #PROCINFO_INITFUNC	)
  THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)

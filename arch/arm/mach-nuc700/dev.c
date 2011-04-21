@@ -203,7 +203,7 @@ struct plat_serial8250_port nuc700_uart_data[] = {
 void __init nuc700_board_init(void)
 {
 	struct platform_device * pdev;
-
+	
 	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
 				NULL, 0, nuc700_uart_data, sizeof(nuc700_uart_data));
 

@@ -25,19 +25,19 @@
 
 /* open i,d,w cache single */
 
-void open_i_cache(void){
+asmlinkage void  open_i_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) | ICAEN), REG_CAHCNF);
 
 }
 
-void open_d_cache(void){
+asmlinkage void  open_d_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) | DCAEN), REG_CAHCNF);
 
 }
 
-void open_w_cache(void){
+asmlinkage void  open_w_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) | WRBEN), REG_CAHCNF);
 
@@ -45,19 +45,19 @@ void open_w_cache(void){
 
 /* close i,d,w cache single */
 
-void close_i_cache(void){
+asmlinkage void  close_i_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) & (~ICAEN)), REG_CAHCNF);
 
 }
 
-void close_d_cache(void){
+asmlinkage void  close_d_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) & (~DCAEN)), REG_CAHCNF);
 
 }
 
-void close_w_cache(void){
+asmlinkage void  close_w_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) & (~WRBEN)), REG_CAHCNF);
 
@@ -65,19 +65,19 @@ void close_w_cache(void){
 
 /* open flush and close i,d,w cache whole */
 
-void open_cache(void){
+asmlinkage void  open_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) | ICAEN |
 						DCAEN | WRBEN), REG_CAHCNF);
 }
 
-void close_cache(void){
+asmlinkage void  close_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCNF) & (~(ICAEN |
 						DCAEN | WRBEN))), REG_CAHCNF);
 }
 
-void flush_cache(void){
+asmlinkage void  flush_cache(void){
 
 	__raw_writel((__raw_readl(REG_CAHCON) |
 				ICAH | DCAH | DRWB | FLHA), REG_CAHCON);

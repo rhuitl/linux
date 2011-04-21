@@ -388,11 +388,13 @@ void __init bootmem_init(void)
 	 * Sparsemem tries to allocate bootmem in memory_present(),
 	 * so must be done after the fixed reservations
 	 */
+	 
 	arm_memory_present();
 
 	/*
 	 * sparse_init() needs the bootmem allocator up and running.
 	 */
+	 
 	sparse_init();
 
 	/*
