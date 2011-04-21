@@ -21,6 +21,12 @@ config ZSWAN_DEBUG_UART
 	  If you doubt serial driver is not ok for debug other driver,
 	  you can use this option to debug.
 
+config CACHE_NUC700
+	bool "NUC700 has a private cache management controller!"
+	help
+	  NUC700 has a private cache management controller, if you have
+	  some srange codes bugs, you can disable this to debug.
+
 menu "NUC710 Machines"
 
 config MACH_NUC710EVB

@@ -84,3 +84,17 @@ asmlinkage void  flush_cache(void){
 	while(__raw_readl(REG_CAHCON) != 0x0);
 }
 
+asmlinkage void  flush_icache(void){
+
+	__raw_writel((__raw_readl(REG_CAHCON) |
+						ICAH | FLHA), REG_CAHCON);
+	while(__raw_readl(REG_CAHCON) != 0x0);
+}
+
+asmlinkage void  flush_dcache(void){
+
+	__raw_writel((__raw_readl(REG_CAHCON) |
+					DRWB | DCAH | FLHA), REG_CAHCON);
+	while(__raw_readl(REG_CAHCON) != 0x0);
+}
+

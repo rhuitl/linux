@@ -24,7 +24,7 @@
 #define REG_TICR1		(TMR_BA+0x0C)
 #define REG_TDR0		(TMR_BA+0x10)
 #define REG_TDR1		(TMR_BA+0x14)
-#define REG_TISR		(TMR_BA+0x18)
+#define REG_TISR			(TMR_BA+0x18)
 #define REG_WTCR		(TMR_BA+0x1C)
 
 #endif /*  __ASM_ARCH_REGS_TIMER_H */

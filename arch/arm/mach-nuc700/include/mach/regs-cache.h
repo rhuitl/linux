@@ -31,4 +31,8 @@
 #define FLHA		0x4
 #define DRWB		(0x01 << 7)
 
+extern asmlinkage void  open_cache(void);
+extern asmlinkage void  close_cache(void);
+extern asmlinkage void  flush_cache(void);
+
 #endif /*  __ASM_ARCH_REGS_TIMER_H */
