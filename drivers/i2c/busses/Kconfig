@@ -479,6 +479,20 @@ config I2C_NUC900
 	  Say Y here to include support for I2C controller in the
 	  Winbond/Nuvoton NUC900 based System-on-Chip devices.
 
+config I2C_NUC700_P0
+	tristate "NUC700 I2C Port0 Driver"
+	depends on ARCH_NUC700
+	help
+	  Say Y here to include support for I2C Port0 controller in the
+	  Nuvoton NUC700 based System-on-Chip devices.
+	  
+config I2C_NUC700_P1
+	tristate "NUC700 I2C Port1 Driver"
+	depends on ARCH_NUC700
+	help
+	  Say Y here to include support for I2C Port1 controller in the
+	  Nuvoton NUC700 based System-on-Chip devices.
+
 config I2C_OCORES
 	tristate "OpenCores I2C Controller"
 	depends on EXPERIMENTAL

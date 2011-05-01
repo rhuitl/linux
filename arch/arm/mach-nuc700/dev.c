@@ -37,6 +37,7 @@
 #include <mach/map.h>
 #include <mach/nuc700_keypad.h>
 #include <mach/nuc700_spi.h>
+#include <mach/i2c.h>
 
 #include "cpu.h"
 
@@ -150,10 +151,12 @@ static struct nuc700_spi_info nuc700_spiflash_data = {
         .bus_num	= 0,
 };
 
+#define SPIOFFSET		0x200
+#define SPIOREG_SIZE		0x100
 static struct resource nuc700_spi_resource[] = {
         [0] = {
-                .start = NUC700_PA_I2C + NUC700_SZ_I2C,
-                .end   = NUC700_PA_I2C + NUC700_SZ_I2C  - 1,
+                .start = NUC700_PA_I2C + SPIOFFSET,
+                .end   = NUC700_PA_I2C + SPIOFFSET + SPIOREG_SIZE  - 1,
                 .flags = IORESOURCE_MEM,
         },
         [1] = {
@@ -190,6 +193,60 @@ static struct spi_board_info nuc700_spi_board_info[] __initdata = {
                 .mode = SPI_MODE_0,
         },
 };
+
+/* I2C */
+
+#define I2C0FFSET	0x100
+
+/* for port 0 */
+static struct resource nuc700_i2c_p0_resource[] = {
+        [0] = {
+                .start = NUC700_PA_I2C,
+                .end   = NUC700_PA_I2C + I2C0FFSET - 1,
+                .flags = IORESOURCE_MEM,
+        },
+        [1] = {
+                .start = IRQ_I2C0,
+                .end   = IRQ_I2C0,
+                .flags = IORESOURCE_IRQ,
+        }
+
+};
+
+static struct nuc700_platform_i2c nuc700_i2c_p0_platform = {
+        .flags		= 0,
+        .slave_addr	= 0x10,
+        .bus_freq	= 100,
+        .max_freq	= 400,
+        .channel	= 0,
+        .bus_num	=0,
+};
+
+
+/* for port 1 */
+static struct resource nuc700_i2c_p1_resource[] = {
+        [0] = {
+                .start = NUC700_PA_I2C + I2C0FFSET,
+                .end   = NUC700_PA_I2C + SPIOFFSET - 1,
+                .flags = IORESOURCE_MEM,
+        },
+        [1] = {
+                .start = IRQ_I2C1,
+                .end   = IRQ_I2C1,
+                .flags = IORESOURCE_IRQ,
+        }
+
+};
+
+static struct nuc700_platform_i2c nuc700_i2c_p1_platform = {
+        .flags		= 0,
+        .slave_addr	= 0x10,
+        .bus_freq	= 100,
+        .max_freq	= 400,
+        .channel	= 1,
+        .bus_num	= 1,
+};
+
 
 /* WDT Device */
 
@@ -242,6 +299,14 @@ void __init nuc700_board_init(void)
 
 	platform_device_register_resndata(NULL, "nuc700-wdt",  -1,
 				nuc700_wdt_resource, ARRAY_SIZE(nuc700_wdt_resource) , NULL, 0);
+
+	platform_device_register_resndata(NULL, "nuc700-i2c-p0",  -1,
+				nuc700_i2c_p0_resource, ARRAY_SIZE(nuc700_i2c_p0_resource), 
+				&nuc700_i2c_p0_platform, sizeof(nuc700_i2c_p0_platform));
+
+	platform_device_register_resndata(NULL, "nuc700-i2c-p1",  -1,
+				nuc700_i2c_p1_resource, ARRAY_SIZE(nuc700_i2c_p1_resource), 
+				&nuc700_i2c_p1_platform, sizeof(nuc700_i2c_p1_platform));
 
 	spi_register_board_info(nuc700_spi_board_info,
                                 ARRAY_SIZE(nuc700_spi_board_info));

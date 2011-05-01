@@ -102,6 +102,7 @@
 #define UART_BA		NUC700_PA_UART
 #define GPIO_BA		NUC700_PA_GPIO
 #define CACHE_BA	NUC700_PA_CACHE
+#define I2C_BA		NUC700_PA_I2C
 
 
 #endif /* __ASM_ARCH_MAP_H */
