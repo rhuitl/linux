@@ -17,9 +17,25 @@
 
 #include <linux/platform_device.h>
 #include <asm/mach/map.h>
+#include <asm/mach/irq.h>
 #include <mach/hardware.h>
 #include "cpu.h"
 #include "clock.h"
+
+/* RTC controller*/
+
+static struct resource nuc700_rtc_resource[] = {
+	[0] = {
+		.start = NUC700_PA_RTC,
+		.end   = NUC700_PA_RTC + NUC700_SZ_RTC,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_RTC,
+		.end   = IRQ_RTC,
+		.flags = IORESOURCE_IRQ,
+	},
+};
 
 /*Init NUC710 evb read id*/
 
@@ -44,5 +60,9 @@ void __init nuc710_init_clocks(void)
 
 void __init nuc710_board_init(void)
 {
+	struct platform_device * pdev;
+
+	platform_device_register_resndata(NULL, "nuc700-rtc",  -1,
+				nuc700_rtc_resource, ARRAY_SIZE(nuc700_rtc_resource) , NULL, 0);
 	nuc700_board_init();
 }
