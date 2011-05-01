@@ -1,0 +1,27 @@
+##
+## NUC700 series AC97 API
+##
+config SND_SOC_NUC700
+	tristate "SoC Audio for NUC700 series"
+	depends on ARCH_NUC700
+	help
+	  This option enables support for AC97 mode on the NUC700 SoC.
+
+config SND_SOC_NUC700_AC97
+	tristate
+	select AC97_BUS
+	select SND_AC97_CODEC
+	select SND_SOC_AC97_BUS
+
+
+##
+## Boards
+##
+config SND_SOC_NUC700EVB
+	tristate "NUC700 AC97 support for demo board"
+	depends on SND_SOC_NUC700
+	select SND_SOC_NUC700_AC97
+	select SND_SOC_AC97_CODEC
+	help
+	  Select this option to enable audio (AC97) on the
+	  NUC700 demoboard.

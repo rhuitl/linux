@@ -263,6 +263,22 @@ static struct resource nuc700_wdt_resource[] = {
 	}
 };
 
+/* Audio Device */
+
+static struct resource nuc700_audio_resource[] = {
+	[0] = {
+		.start = NUC700_PA_AC97I2S,
+		.end   = NUC700_PA_AC97I2S + NUC700_SZ_AC97I2S - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_ACTL,
+		.end   = IRQ_ACTL,
+		.flags = IORESOURCE_IRQ,
+	}
+
+};
+
 /* Initial serial platform data */
 
 struct plat_serial8250_port nuc700_uart_data[] = {
@@ -307,6 +323,9 @@ void __init nuc700_board_init(void)
 	platform_device_register_resndata(NULL, "nuc700-i2c-p1",  -1,
 				nuc700_i2c_p1_resource, ARRAY_SIZE(nuc700_i2c_p1_resource), 
 				&nuc700_i2c_p1_platform, sizeof(nuc700_i2c_p1_platform));
+
+	platform_device_register_resndata(NULL, "nuc700-ac97",  -1,
+				nuc700_audio_resource, ARRAY_SIZE(nuc700_audio_resource) , NULL, 0);
 
 	spi_register_board_info(nuc700_spi_board_info,
                                 ARRAY_SIZE(nuc700_spi_board_info));
