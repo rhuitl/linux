@@ -312,6 +312,13 @@ config NUC900_WATCHDOG
 	  To compile this driver as a module, choose M here: the
 	  module will be called nuc900_wdt.
 
+config NUC700_WATCHDOG
+	tristate "Nuvoton NUC700 watchdog"
+	depends on ARCH_NUC700
+	help
+	  Say Y here if to include support for the watchdog timer
+	  for the Nuvoton NUC700 series SoCs.
+
 config ADX_WATCHDOG
 	tristate "Avionic Design Xanthos watchdog"
 	depends on ARCH_PXA_ADX

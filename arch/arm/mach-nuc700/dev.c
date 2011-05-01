@@ -191,6 +191,21 @@ static struct spi_board_info nuc700_spi_board_info[] __initdata = {
         },
 };
 
+/* WDT Device */
+
+static struct resource nuc700_wdt_resource[] = {
+	[0] = {
+		.start = NUC700_PA_TIMER,
+		.end   = NUC700_PA_TIMER + NUC700_SZ_TIMER - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_WDT,
+		.end   = IRQ_WDT,
+		.flags = IORESOURCE_IRQ,
+	}
+};
+
 /* Initial serial platform data */
 
 struct plat_serial8250_port nuc700_uart_data[] = {
@@ -224,6 +239,9 @@ void __init nuc700_board_init(void)
 	platform_device_register_resndata(NULL, "nuc700-spi",  -1,
 				nuc700_spi_resource, ARRAY_SIZE(nuc700_spi_resource) , 
 				&nuc700_spiflash_data, sizeof(nuc700_spiflash_data));
+
+	platform_device_register_resndata(NULL, "nuc700-wdt",  -1,
+				nuc700_wdt_resource, ARRAY_SIZE(nuc700_wdt_resource) , NULL, 0);
 
 	spi_register_board_info(nuc700_spi_board_info,
                                 ARRAY_SIZE(nuc700_spi_board_info));
