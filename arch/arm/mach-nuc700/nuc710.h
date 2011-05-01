@@ -1,9 +1,9 @@
 /*
- * arch/arm/mach-w90x900/nuc910.h
+ * arch/arm/mach-nuc700/nuc710.h
  *
- * Copyright (c) 2008 Nuvoton corporation
+ * Copyright (c) 2011 Nuvoton corporation
  *
- * Header file for NUC900 CPU support
+ * Header file for NUC700 CPU support
  *
  * Wan ZongShun <mcuos.com@gmail.com>
  *
@@ -21,7 +21,7 @@ struct sys_timer;
 extern void nuc700_init_irq(void);
 extern struct sys_timer nuc700_timer;
 
-/* extern file from nuc910.c */
+/* extern file from nuc710.c */
 
 extern void nuc710_board_init(void);
 extern void nuc710_init_clocks(void);

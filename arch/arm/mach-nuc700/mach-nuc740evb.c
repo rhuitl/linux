@@ -1,9 +1,7 @@
 /*
- * linux/arch/arm/mach-w90x900/mach-nuc910evb.c
+ * linux/arch/arm/mach-nuc700/mach-nuc740evb.c
  *
- * Based on mach-s3c2410/mach-smdk2410.c by Jonas Dietsche
- *
- * Copyright (C) 2008 Nuvoton technology corporation.
+ * Copyright (C) 2011 Nuvoton technology corporation.
  *
  * Wan ZongShun <mcuos.com@gmail.com>
  *
@@ -21,23 +19,23 @@
 
 #include "nuc740.h"
 
-static void __init nuc740evb_init_first(void)
+static void __init nuc740evb_init_board(void)
+{
+	nuc740_board_init();
+}
+
+static void __init nuc740evb_init(void)
 {
 	nuc740_read_id();
 	nuc740_init_clocks();
 	nuc740_gpio_init();
 }
 
-static void __init nuc740evb_init(void)
-{
-	nuc740evb_init_first();
-	nuc740_board_init();
-}
-
 MACHINE_START(NUC740EVB, "NUC740EVB")
 	/* Maintainer: Wan ZongShun */
 	.boot_params	= 0,
 	.init_irq	= nuc700_init_irq,
-	.init_machine	= nuc740evb_init,
+	.init_machine	= nuc740evb_init_board,
+	.init_early		= nuc740evb_init,
 	.timer		= &nuc700_timer,
 MACHINE_END

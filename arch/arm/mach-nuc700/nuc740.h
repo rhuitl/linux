@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2010 Nuvoton corporation
  *
- * Header file for NUC900 CPU support
+ * Header file for NUC700 CPU support
  *
  * Wan ZongShun <mcuos.com@gmail.com>
  *

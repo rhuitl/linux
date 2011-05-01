@@ -1,9 +1,7 @@
 /*
- * linux/arch/arm/mach-w90x900/mach-nuc910evb.c
+ * linux/arch/arm/mach-nuc700/mach-nuc710evb.c
  *
- * Based on mach-s3c2410/mach-smdk2410.c by Jonas Dietsche
- *
- * Copyright (C) 2008 Nuvoton technology corporation.
+ * Copyright (C) 2011 Nuvoton technology corporation.
  *
  * Wan ZongShun <mcuos.com@gmail.com>
  *
@@ -21,23 +19,23 @@
 
 #include "nuc710.h"
 
-static void __init nuc710evb_init_first(void)
+static void __init nuc710evb_init_board(void)
+{
+	nuc710_board_init();
+}
+
+static void __init nuc710evb_init(void)
 {
 	nuc710_read_id();
 	nuc710_init_clocks();
 	nuc710_gpio_init();
 }
 
-static void __init nuc710evb_init(void)
-{
-	nuc710evb_init_first();
-	nuc710_board_init();
-}
-
 MACHINE_START(NUC710EVB, "NUC710EVB")
 	/* Maintainer: Wan ZongShun */
 	.boot_params	= 0,
 	.init_irq	= nuc700_init_irq,
-	.init_machine	= nuc710evb_init,
+	.init_machine	= nuc710evb_init_board,
+	.init_early		= nuc710evb_init,
 	.timer		= &nuc700_timer,
 MACHINE_END

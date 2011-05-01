@@ -21,12 +21,6 @@
 #include "cpu.h"
 #include "clock.h"
 
-/* define specific CPU platform device */
-
-static struct platform_device *nuc710_dev[] __initdata = {
-	&nuc700_device_rtc,
-};
-
 /*Init NUC710 evb read id*/
 
 void __init nuc710_read_id(void)
@@ -39,16 +33,16 @@ void __init nuc710_gpio_init(void)
 	nuc700_gpio_init();
 }
 
-/*Init NUC910 clock*/
+/*Init NUC710 clock*/
 
 void __init nuc710_init_clocks(void)
 {
 	nuc700_init_clocks();
 }
 
-/*Init NUC910 board info*/
+/*Init NUC710 board info*/
 
 void __init nuc710_board_init(void)
 {
-	nuc700_board_init(nuc710_dev, ARRAY_SIZE(nuc710_dev));
+	nuc700_board_init();
 }
