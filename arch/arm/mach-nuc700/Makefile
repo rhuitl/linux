@@ -4,7 +4,8 @@
 
 # Object file lists.
 
-obj-y				:= irq.o time.o gpio.o clock.o dev.o cpu.o cache.o
+obj-y				:= irq.o time.o gpio.o clock.o dev.o cpu.o
+obj-y				+= cache.o mfp.o
 # NUC700 CPU support files
 
 obj-$(CONFIG_CPU_NUC710)	+= nuc710.o

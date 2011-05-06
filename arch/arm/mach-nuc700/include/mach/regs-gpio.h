@@ -1,5 +1,5 @@
 /*
- * arch/arm/mach-w90x900/include/mach/regs-ebi.h
+ * arch/arm/mach-w90x900/include/mach/regs-gpio.h
  *
  * Copyright (c) 2009 Nuvoton technology corporation.
  *
@@ -19,6 +19,7 @@
 /* GPIO Control Registers */
 
 #define GPIO_BASE 		GPIO_BA
+#define GPIO_CFG		(0x00)
 #define GPIO_DIR		(0x04)
 #define GPIO_OUT		(0x08)
 #define GPIO_IN			(0x0C)

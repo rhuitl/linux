@@ -825,9 +825,9 @@ static int nuc700_ether_open(struct net_device *dev)
 	//clk_enable(ether->rmiiclk);
 	clk_enable(ether->clk);
 
-	*(unsigned int volatile *)(0xfff83020) = 0x50000;
-	*(unsigned int volatile *)(0xfff83024) = 0; // make sure other pins are in input mode.
-	*(unsigned int volatile *)(0xfff83020) = 0x55555;
+	//*(unsigned int volatile *)(0xfff83020) = 0x50000;
+	//*(unsigned int volatile *)(0xfff83024) = 0; // make sure other pins are in input mode.
+	//*(unsigned int volatile *)(0xfff83020) = 0x55555;
 	
 	ether->rx_packets = 0x0;
 	ether->rx_bytes = 0x0;
