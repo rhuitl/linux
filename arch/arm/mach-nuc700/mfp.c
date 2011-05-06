@@ -69,7 +69,7 @@ void nuc700_mfp_config(unsigned long *mfp_cfgs, int num)
 	for (i = 0; i < num; i++, mfp_cfgs++) {
 		unsigned long val, c = *mfp_cfgs;
 
-		val = (GET_GPIO_VAL(c) |
+		val = ((GET_GPIO_VAL(c) << GET_GPIO_CFG(c)) |
 			( __raw_readl(GPIO_BASE + GET_GPIO_PT(c)) &
 					(~(0x03 <<  GET_GPIO_CFG(c)))));
 

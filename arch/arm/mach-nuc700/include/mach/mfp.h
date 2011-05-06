@@ -39,12 +39,15 @@ extern void nuc700_mfp_config(unsigned long *mfp_cfgs, int num);
 #define GPIO_PT5_OFFSET	0x50
 #define GPIO_PT6_OFFSET	0x60
 
-#define CFG(x, fn, offset)	(((fn) << ((x) << 1)) | (((offset) >> 4) << 24) | ((x) << 28))
+/* 0-7: save fn; 8-15: save x; 16-23: save offset */
+
+#define CFG(x, fn, offset)	((fn) | ((x) << 8) | ((offset) << 16))
+
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
-#define GET_GPIO_CFG(x)		(((x) >> 28) << 1)
-#define GET_GPIO_VAL(x)		((x)&(~(0xff << 24)))
-#define GET_GPIO_PT(x)		(((x) >> 24) << 4)
+#define GET_GPIO_CFG(x)		((((x) >> 8)&0xff) << 1)
+#define GET_GPIO_VAL(x)		((x)&0xff)
+#define GET_GPIO_PT(x)		(((x) >> 16)&0xff)
 
 /*PT0*/
 
