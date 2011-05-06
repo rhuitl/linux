@@ -43,13 +43,14 @@ static int using_by_boot[7] = {-1,-1,-1,-1,-1,-1,-1};
 
 static int check_gpio_default_from_boot(void) {
 
-	int i, j = 0;
+	int i, j = 0, val;
 
 	for (i = 0; i< 7; i++) {
 
-		if (__raw_readl(GPIO_CFG + i*GROUPINERV) != default_val[i]) {
-		printk(KERN_WARNING"The GPIO_CFG%d is not equal to default,\
-						maybe using by boot!\n",i);
+		val = __raw_readl(GPIO_BASE + i*GROUPINERV);
+
+		if (val != default_val[i]) {
+		printk(KERN_WARNING"The GPIO_CFG%d is 0x%x,  not equal to 0x%x, maybe using by boot!\n",i ,val, default_val[i]);
 			using_by_boot[j++] = i;
 		}
 

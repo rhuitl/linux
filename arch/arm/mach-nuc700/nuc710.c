@@ -16,11 +16,26 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/gpio.h>
 #include <asm/mach/map.h>
 #include <asm/mach/irq.h>
 #include <mach/hardware.h>
+#include <mach/regs-gpio.h>
+
 #include "cpu.h"
 #include "clock.h"
+
+/* nuc710 gpio group */
+static struct nuc700_gpio_chip nuc710_gpio[] = {
+	NUC700_GPIO_CHIP("PORT0", 0, 5, 0),
+	NUC700_GPIO_CHIP("PORT1", 20, 10, 0),
+	NUC700_GPIO_CHIP("PORT2", 42, 10, 0),
+	NUC700_GPIO_CHIP("PORT3", 60, 8, 0),
+	NUC700_GPIO_CHIP("PORT4", 52, 19, 0),
+	NUC700_GPIO_CHIP("PORT5", 5, 15, 0),
+	NUC700_GPIO_CHIP("PORT6", 30, 12, 0),
+};
+
 
 /* RTC controller*/
 
@@ -46,7 +61,7 @@ void __init nuc710_read_id(void)
 
 void __init nuc710_gpio_init(void)
 {
-	nuc700_gpio_init();
+	nuc700_gpio_init(nuc710_gpio, ARRAY_SIZE(nuc710_gpio));
 }
 
 /*Init NUC710 clock*/

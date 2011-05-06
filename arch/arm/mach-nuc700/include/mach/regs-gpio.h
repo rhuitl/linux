@@ -12,9 +12,17 @@
  */
 
 #include <mach/hardware.h>
+#include <linux/gpio.h>
 
 #ifndef __ASM_ARCH_REGS_GPIO_H
 #define __ASM_ARCH_REGS_GPIO_H
+
+struct nuc700_gpio_chip {
+	struct gpio_chip	chip;
+	void __iomem		*regbase;	/* Base of group register*/
+	spinlock_t 		gpio_lock;
+	unsigned int 		reserve;
+};
 
 /* GPIO Control Registers */
 
@@ -27,7 +35,7 @@
 #define GPIO_GPIO(Nb)		(0x00000001 << (Nb))
 #define to_nuc700_gpio_chip(c) container_of(c, struct nuc700_gpio_chip, chip)
 
-#define NUC700_GPIO_CHIP(name, base_gpio, nr_gpio)			\
+#define NUC700_GPIO_CHIP(name, base_gpio, nr_gpio, _reserve)		\
 	{								\
 		.chip = {						\
 			.label		  = name,			\
@@ -37,9 +45,14 @@
 			.set		  = nuc700_gpio_set,		\
 			.base		  = base_gpio,			\
 			.ngpio		  = nr_gpio,			\
-		}							\
+		},							\
+		.reserve = _reserve,					\
 	}
-
-extern void nuc700_init_gpio_port(void);
+extern void nuc700_init_gpio_port(struct nuc700_gpio_chip *gpio_chip, int num);
+extern void nuc700_gpio_init(struct nuc700_gpio_chip *gpio_chip, int num);
+extern int nuc700_gpio_get(struct gpio_chip *chip, unsigned offset);
+extern void nuc700_gpio_set(struct gpio_chip *chip, unsigned offset, int val);
+extern int nuc700_dir_input(struct gpio_chip *chip, unsigned offset);
+extern int nuc700_dir_output(struct gpio_chip *chip, unsigned offset, int val);
 
 #endif /*  __ASM_ARCH_REGS_EBI_H */

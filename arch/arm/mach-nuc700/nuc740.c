@@ -14,10 +14,16 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/gpio.h>
 #include <asm/mach/map.h>
 #include <mach/hardware.h>
+#include <mach/regs-gpio.h>
 #include "cpu.h"
 #include "clock.h"
+
+/* nuc740 gpio group */
+static struct nuc700_gpio_chip nuc740_gpio[] = {
+};
 
 /*Init NUC740 evb read id*/
 
@@ -28,7 +34,7 @@ void __init nuc740_read_id(void)
 
 void __init nuc740_gpio_init(void)
 {
-	nuc700_gpio_init();
+	nuc700_gpio_init(nuc740_gpio, ARRAY_SIZE(nuc740_gpio));
 }
 
 /*Init NUC740 clock*/

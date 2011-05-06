@@ -114,8 +114,8 @@ void __init nuc700_init_clocks(void)
 	clkdev_add_table(nuc700_clkregs, ARRAY_SIZE(nuc700_clkregs));
 }
 
-void __init nuc700_gpio_init(void)
+void __init nuc700_gpio_init(struct nuc700_gpio_chip *gpio_chip, int num)
 {
-	nuc700_init_gpio_port();
+	nuc700_init_gpio_port(gpio_chip, num);
 }
 

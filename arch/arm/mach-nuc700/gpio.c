@@ -24,13 +24,7 @@
 
 #include <mach/regs-gpio.h>
 
-struct nuc700_gpio_chip {
-	struct gpio_chip	chip;
-	void __iomem		*regbase;	/* Base of group register*/
-	spinlock_t 		gpio_lock;
-};
-
-static int nuc700_gpio_get(struct gpio_chip *chip, unsigned offset)
+int nuc700_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
 	struct nuc700_gpio_chip *nuc700_gpio = to_nuc700_gpio_chip(chip);
 	void __iomem *pio = nuc700_gpio->regbase + GPIO_IN;
@@ -42,7 +36,7 @@ static int nuc700_gpio_get(struct gpio_chip *chip, unsigned offset)
 	return (regval != 0);
 }
 
-static void nuc700_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
+void nuc700_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
 {
 	struct nuc700_gpio_chip *nuc700_gpio = to_nuc700_gpio_chip(chip);
 	void __iomem *pio = nuc700_gpio->regbase + GPIO_OUT;
@@ -63,7 +57,7 @@ static void nuc700_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
 	spin_unlock_irqrestore(&nuc700_gpio->gpio_lock, flags);
 }
 
-static int nuc700_dir_input(struct gpio_chip *chip, unsigned offset)
+int nuc700_dir_input(struct gpio_chip *chip, unsigned offset)
 {
 	struct nuc700_gpio_chip *nuc700_gpio = to_nuc700_gpio_chip(chip);
 	void __iomem *pio = nuc700_gpio->regbase + GPIO_DIR;
@@ -81,7 +75,7 @@ static int nuc700_dir_input(struct gpio_chip *chip, unsigned offset)
 	return 0;
 }
 
-static int nuc700_dir_output(struct gpio_chip *chip, unsigned offset, int val)
+int nuc700_dir_output(struct gpio_chip *chip, unsigned offset, int val)
 {
 	struct nuc700_gpio_chip *nuc700_gpio = to_nuc700_gpio_chip(chip);
 	void __iomem *outreg = nuc700_gpio->regbase + GPIO_OUT;
@@ -109,23 +103,12 @@ static int nuc700_dir_output(struct gpio_chip *chip, unsigned offset, int val)
 	return 0;
 }
 
-static struct nuc700_gpio_chip nuc700_gpio[] = {
-	NUC700_GPIO_CHIP("PORT0", 0, 5),
-	NUC700_GPIO_CHIP("PORT1", 20, 10),
-	NUC700_GPIO_CHIP("PORT2", 42, 10),
-	NUC700_GPIO_CHIP("PORT3", 60, 8),
-	NUC700_GPIO_CHIP("PORT4", 52, 19),
-	NUC700_GPIO_CHIP("PORT5", 5, 15),
-	NUC700_GPIO_CHIP("PORT6", 30, 12),
-};
-
-void nuc700_init_gpio_port(void)
+void nuc700_init_gpio_port(struct nuc700_gpio_chip *gpio_chip, int num)
 {
 	unsigned i;
-	struct nuc700_gpio_chip *gpio_chip;
 
-	for (i = 0; i < ARRAY_SIZE(nuc700_gpio); i++) {
-		gpio_chip = &nuc700_gpio[i];
+	for (i = 0; i < num; i++, gpio_chip++) {
+		if(gpio_chip->reserve) continue;
 		spin_lock_init(&gpio_chip->gpio_lock);
 		gpio_chip->regbase = (unsigned int*)(GPIO_BASE + i * GROUPINERV);
 		gpiochip_add(&gpio_chip->chip);

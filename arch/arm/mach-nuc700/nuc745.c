@@ -14,10 +14,23 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/gpio.h>
 #include <asm/mach/map.h>
 #include <mach/hardware.h>
+#include <mach/regs-gpio.h>
 #include "cpu.h"
 #include "clock.h"
+
+/* nuc745 gpio group */
+static struct nuc700_gpio_chip nuc745_gpio[] = {
+	NUC700_GPIO_CHIP("PORT0", 0, 5, 0),
+	NUC700_GPIO_CHIP("PORT1", 18, 2, 0),
+	NUC700_GPIO_CHIP("PORT2", 20, 10, 0),
+	NUC700_GPIO_CHIP("PORT3", 0, 0, 1),
+	NUC700_GPIO_CHIP("PORT4", 30, 1, 0),
+	NUC700_GPIO_CHIP("PORT5", 5, 13, 0),
+	NUC700_GPIO_CHIP("PORT6", 0, 0, 1),
+};
 
 /*Init NUC710 evb read id*/
 
@@ -28,7 +41,7 @@ void __init nuc745_read_id(void)
 
 void __init nuc745_gpio_init(void)
 {
-	nuc700_gpio_init();
+	nuc700_gpio_init(nuc745_gpio, ARRAY_SIZE(nuc745_gpio));
 }
 
 /*Init NUC745 clock*/
