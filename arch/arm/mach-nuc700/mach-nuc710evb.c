@@ -16,7 +16,7 @@
 #include <asm/mach/map.h>
 #include <asm/mach-types.h>
 #include <mach/map.h>
-#include <mach/mfp.h>
+#include <mach/mfp-nuc710.h>
 
 #include "nuc710.h"
 
@@ -33,6 +33,7 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO49_PHYTXD1,
 	GPIO50_PHYMDIO,
 	GPIO51_PHYMDC,
+
 	
 };
 

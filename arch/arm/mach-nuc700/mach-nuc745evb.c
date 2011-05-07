@@ -16,24 +16,23 @@
 #include <asm/mach/map.h>
 #include <asm/mach-types.h>
 #include <mach/map.h>
-#include <mach/mfp.h>
+#include <mach/mfp-nuc745.h>
 
 #include "nuc745.h"
 
 static unsigned long nuc745_multi_pin_config[] __initdata = {
 
 	/* enable ethernet */
-	GPIO42_PHYRXERR,
-	GPIO43_PHYCRSDV,
-	GPIO44_PHYRXD0,
-	GPIO45_PHYRXD1,
-	GPIO46_PHYREFCLK,
-	GPIO47_PHYTXEN,
-	GPIO48_PHYTXD0,
-	GPIO49_PHYTXD1,
-	GPIO50_PHYMDIO,
-	GPIO51_PHYMDC,
-	
+	GPIO20_PHYRXERR,
+	GPIO21_PHYCRSDV,
+	GPIO22_PHYRXD0,
+	GPIO23_PHYRXD1,
+	GPIO24_PHYREFCLK,
+	GPIO25_PHYTXEN,
+	GPIO26_PHYTXD0,
+	GPIO27_PHYTXD1,
+	GPIO28_PHYMDIO,
+	GPIO29_PHYMDC,
 };
 
 static void __init nuc745evb_init_board(void)
