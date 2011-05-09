@@ -41,7 +41,7 @@ static int default_val[7] = {
 
 static int using_by_boot[7] = {-1,-1,-1,-1,-1,-1,-1};
 
-static int check_gpio_default_from_boot(void) {
+static int __init check_gpio_default_from_boot(void) {
 
 	int i, j = 0, val;
 
@@ -58,7 +58,7 @@ static int check_gpio_default_from_boot(void) {
 	return j;
 }
 
-void nuc700_mfp_config(unsigned long *mfp_cfgs, int num)
+void __init nuc700_mfp_config(unsigned long *mfp_cfgs, int num)
 {
 	unsigned long flags;
 	int i;

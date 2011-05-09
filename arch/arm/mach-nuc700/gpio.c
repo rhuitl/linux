@@ -103,7 +103,7 @@ int nuc700_dir_output(struct gpio_chip *chip, unsigned offset, int val)
 	return 0;
 }
 
-void nuc700_init_gpio_port(struct nuc700_gpio_chip *gpio_chip, int num)
+void __init nuc700_init_gpio_port(struct nuc700_gpio_chip *gpio_chip, int num)
 {
 	unsigned i;
 

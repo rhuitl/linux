@@ -62,7 +62,7 @@ static struct irqaction nuc700_timer_irq = {
 
 /*Set up timer reg.*/
 
-static void nuc700_timer_setup(void)
+static void __init nuc700_timer_setup(void)
 {
 	struct clk *ck_ext = clk_get(NULL, "ext"); 
 	struct clk *ck_timer = clk_get(NULL, "timer");
