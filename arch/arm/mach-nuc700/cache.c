@@ -23,6 +23,7 @@
 
 #include <mach/regs-cache.h>
 
+#ifdef CONFIG_CACHE_NUC700
 /* open i,d,w cache single */
 
 asmlinkage void  open_i_cache(void){
@@ -97,4 +98,45 @@ asmlinkage void  flush_dcache(void){
 					DRWB | DCAH | FLHA), REG_CAHCON);
 	while(__raw_readl(REG_CAHCON) != 0x0);
 }
+#else
+/* open i,d,w cache single */
+
+asmlinkage void  open_i_cache(void){
+}
+
+asmlinkage void  open_d_cache(void){
+}
+
+asmlinkage void  open_w_cache(void){
+}
+
+/* close i,d,w cache single */
+
+asmlinkage void  close_i_cache(void){
+}
+
+asmlinkage void  close_d_cache(void){
+}
+
+asmlinkage void  close_w_cache(void){
+
+}
+
+/* open flush and close i,d,w cache whole */
+
+asmlinkage void  open_cache(void){
+}
+
+asmlinkage void  close_cache(void){
+}
+
+asmlinkage void  flush_cache(void){
+}
+
+asmlinkage void  flush_icache(void){
+}
+
+asmlinkage void  flush_dcache(void){
+}
+#endif
 

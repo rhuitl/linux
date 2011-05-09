@@ -600,7 +600,7 @@ config ARCH_NUC700
 	select ARCH_REQUIRE_GPIOLIB
 	select CLKDEV_LOOKUP
 	select ARCH_USES_GETTIMEOFFSET
-	select ARCH_HAS_BARRIERS if CACHE_NUC700
+	select ARCH_HAS_BARRIERS
 	help
 	  Support for Nuvoton (Winbond logic dept.) ARM7 processor,
 	  At present, regarding the ARM series product line, you can
