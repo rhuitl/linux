@@ -17,6 +17,11 @@ config DRAM_SIZE
 	hex '(S)DRAM SIZE' if SET_MEM_PARAM
 	default 0x00800000
 
+config ROMFS_MTD_DRAM_START
+	hex 'Rootfs start (S)DRAM address(DRAM size - Rootfs size)' if SET_MEM_PARAM
+	depends on MTD_UCLINUX
+	default 0x00700000
+
 config FLASH_MEM_BASE
 	hex 'FLASH Base Address' if SET_MEM_PARAM
 	default 0x00400000

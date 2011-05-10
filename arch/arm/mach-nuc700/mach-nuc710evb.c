@@ -18,6 +18,10 @@
 #include <mach/map.h>
 #include <mach/mfp-nuc710.h>
 
+#include <linux/mtd/physmap.h>
+#include <linux/mtd/mtd.h>
+#include <linux/mtd/partitions.h>
+
 #include "nuc710.h"
 
 static unsigned long nuc710_multi_pin_config[] __initdata = {
@@ -37,8 +41,36 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	
 };
 
+/*NUC710 evb norflash driver data */
+
+static struct mtd_partition nuc710_flash_partitions[] = {
+
+	{
+		.name	=	"Rootfs Partition (2M)",
+		.size	=	0x200000,
+		.offset	=	0x200000,
+	}
+};
+
+static struct physmap_flash_data nuc710_flash_data = {
+	.width		=	2,
+	.parts		=	nuc710_flash_partitions,
+	.nr_parts	=	ARRAY_SIZE(nuc710_flash_partitions),
+};
+
+static struct resource nuc710_flash_resources[] = {
+	{
+		.start	=	CONFIG_FLASH_MEM_BASE,
+		.end	=	CONFIG_FLASH_MEM_BASE + CONFIG_FLASH_SIZE - 1,
+		.flags	=	IORESOURCE_MEM,
+	}
+};
+
 static void __init nuc710evb_init_board(void)
 {
+	platform_device_register_resndata(NULL, "physmap-flash",  -1,
+				nuc710_flash_resources, ARRAY_SIZE(nuc710_flash_resources) , 
+				&nuc710_flash_data, sizeof(nuc710_flash_data));
 	nuc710_board_init();
 }
 

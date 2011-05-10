@@ -32,7 +32,7 @@ struct map_info uclinux_ram_map = {
 #else
 struct map_info uclinux_ram_map = {
 	.name = "RAM",
-	.phys = (unsigned long)CONFIG_DRAM_SIZE,
+	.phys = (unsigned long)CONFIG_ROMFS_MTD_DRAM_START,
 	.size = 0,
 };
 #endif
