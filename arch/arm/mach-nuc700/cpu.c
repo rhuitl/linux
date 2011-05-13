@@ -22,6 +22,8 @@
 #include <linux/platform_device.h>
 #include <linux/io.h>
 #include <linux/delay.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
@@ -64,7 +66,7 @@ static DEFINE_CLK(ps2, 28);
 static DEFINE_CLK(ext, 0);
 
 static struct clk_lookup nuc700_clkregs[] = {
-	DEF_CLKLOOK(&clk_uart0, "nuc700-uart0", NULL),
+	DEF_CLKLOOK(&clk_uart0, "NULL", "uart0"),
 	DEF_CLKLOOK(&clk_timer, NULL, "timer"),
 	DEF_CLKLOOK(&clk_ohci, "nuc700-ohci", NULL),
 	DEF_CLKLOOK(&clk_wdt, "nuc700-wdt", NULL),
@@ -77,9 +79,9 @@ static struct clk_lookup nuc700_clkregs[] = {
 	DEF_CLKLOOK(&clk_rtc, "nuc700-rtc", NULL),
 	DEF_CLKLOOK(&clk_i2c0, "nuc700-i2c-p0", NULL),
 	DEF_CLKLOOK(&clk_i2c1, "nuc700-i2c-p1", NULL),
-	DEF_CLKLOOK(&clk_uart1, "nuc700-uart1", NULL),
-	DEF_CLKLOOK(&clk_uart2, "nuc700-uart2", NULL),
-	DEF_CLKLOOK(&clk_uart3, "nuc700-uart3", NULL),
+	DEF_CLKLOOK(&clk_uart1, "NULL", "uart1"),
+	DEF_CLKLOOK(&clk_uart2, "NULL", "uart2"),
+	DEF_CLKLOOK(&clk_uart3, "NULL", "uart3"),
 	DEF_CLKLOOK(&clk_usi, "nuc700-spi", NULL),
 	DEF_CLKLOOK(&clk_sch0, "nuc700-sch0", NULL),
 	DEF_CLKLOOK(&clk_sch1, "nuc700-sch1", NULL),
@@ -117,5 +119,28 @@ void __init nuc700_init_clocks(void)
 void __init nuc700_gpio_init(struct nuc700_gpio_chip *gpio_chip, int num)
 {
 	nuc700_init_gpio_port(gpio_chip, num);
+}
+
+void __init nuc700_uart_clk_enable(int uart_num)
+{
+	char *name = NULL;
+
+	if (!uart_num) {
+		printk(KERN_WARNING "NUC700 UART0 has been initialized in bootloader!\n");
+		goto ret;
+	}
+	if ((uart_num & 0x03) == 0x01)
+		name = "uart1";
+	else if ((uart_num & 0x03) == 0x02)
+		name = "uart2";
+	else if ((uart_num & 0x03) == 0x03)
+		name = "uart3";
+
+	struct clk *ck_uart = clk_get(NULL, name);
+	BUG_ON(IS_ERR(ck_uart));
+
+	clk_enable(ck_uart);
+ret:
+;
 }
 

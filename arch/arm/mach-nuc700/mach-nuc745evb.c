@@ -12,11 +12,14 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/serial_8250.h>
+
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
 #include <asm/mach-types.h>
 #include <mach/map.h>
 #include <mach/mfp-nuc745.h>
+#include <mach/regs-serial.h>
 
 #include <linux/mtd/physmap.h>
 #include <linux/mtd/mtd.h>
@@ -37,6 +40,28 @@ static unsigned long nuc745_multi_pin_config[] __initdata = {
 	GPIO27_PHYTXD1,
 	GPIO28_PHYMDIO,
 	GPIO29_PHYMDC,
+#ifdef CONFIG_NUC700_UART1
+	GPIO7_TXD1,
+	GPIO8_RXD1,
+#endif
+
+#ifdef CONFIG_NUC700_UART2
+	GPIO9_TXD2,
+	GPIO10_RXD2,
+#endif
+
+#ifdef CONFIG_NUC700_UART1_CTSRTS
+	GPIO9_CTS1,
+	GPIO10_RTS1,
+#endif
+
+#ifdef CONFIG_NUC700_UART3
+	GPIO1_UART_DTR3,
+	GPIO2_UART_DSR3,
+	GPIO3_UART_TXD3,
+	GPIO4_UART_RXD3,
+#endif
+
 };
 
 /*NUC745 evb norflash driver data */
@@ -64,11 +89,45 @@ static struct resource nuc745_flash_resources[] = {
 	}
 };
 
+/* Initial serial platform data */
+
+struct plat_serial8250_port nuc745_uart_data[] = {
+	NUC700_8250PORT(UART0),
+#ifdef CONFIG_NUC700_UART1
+	NUC700_8250PORT(UART1),
+#endif
+#ifdef CONFIG_NUC700_UART2
+	NUC700_8250PORT(UART2),
+#endif
+#ifdef CONFIG_NUC700_UART3
+	NUC700_8250PORT(UART3),
+#endif
+	{},
+};
+
+void __init nuc745_uart_clk_enable(void) {
+
+#ifdef CONFIG_NUC700_UART1
+	nuc700_uart_clk_enable(1);
+#endif
+#ifdef CONFIG_NUC700_UART2
+	nuc700_uart_clk_enable(2);
+#endif
+#ifdef CONFIG_NUC700_UART3
+	nuc700_uart_clk_enable(3);
+#endif
+
+}
+
 static void __init nuc745evb_init_board(void)
 {
+	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
+				NULL, 0, nuc745_uart_data, sizeof(nuc745_uart_data));
+
 	platform_device_register_resndata(NULL, "physmap-flash",  -1,
 				nuc745_flash_resources, ARRAY_SIZE(nuc745_flash_resources) , 
 				&nuc745_flash_data, sizeof(nuc745_flash_data));
+	nuc745_uart_clk_enable();
 	nuc745_board_init();
 }
 

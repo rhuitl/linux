@@ -18,7 +18,6 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
-#include <linux/serial_8250.h>
 #include <linux/slab.h>
 
 #include <linux/mtd/physmap.h>
@@ -33,7 +32,6 @@
 #include <asm/mach/irq.h>
 #include <asm/mach-types.h>
 
-#include <mach/regs-serial.h>
 #include <mach/map.h>
 #include <mach/nuc700_keypad.h>
 #include <mach/nuc700_spi.h>
@@ -279,22 +277,12 @@ static struct resource nuc700_audio_resource[] = {
 
 };
 
-/* Initial serial platform data */
-
-struct plat_serial8250_port nuc700_uart_data[] = {
-	NUC700_8250PORT(UART0),
-	{},
-};
-
 /* Provide adding specific CPU platform devices API */
 
 void __init nuc700_board_init(void)
 {
 	struct platform_device * pdev;
 	
-	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
-				NULL, 0, nuc700_uart_data, sizeof(nuc700_uart_data));
-
 	pdev = platform_device_register_resndata(NULL, "nuc700-ohci", -1,
 				nuc700_ohci_resource, ARRAY_SIZE(nuc700_ohci_resource) , NULL, 0);
 	pdev->dev.dma_mask = &nuc700_device_ohci_dmamask;

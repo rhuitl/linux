@@ -35,7 +35,6 @@ config MACH_NUC710EVB
 	select CPU_NUC710
 	help
 	   Say Y here if you are using the Nuvoton NUC710EVB
-
 endmenu
 
 menu "NUC745 Machines"
@@ -58,4 +57,33 @@ config MACH_NUC740EVB
 
 endmenu
 
+menu "NUC700 UART Using"
+config NUC700_UART1
+	bool "Uart1 support"
+	default n
+	depends on MACH_NUC710EVB || MACH_NUC740EVB || MACH_NUC745EVB
+	help
+	   Say Y here if you are using the Nuvoton NUC700EVB
+
+config NUC700_UART1_CTSRTS
+	bool "Uart1 support CTS/RTS functions?"
+	default n
+	depends on NUC700_UART1
+	help
+	   Say Y here if you are not using the uart2, which is conflict to uart1
+	   cts/rts function.
+
+config NUC700_UART2
+	bool "Uart2 support"
+	default n
+	depends on (MACH_NUC710EVB || MACH_NUC740EVB || MACH_NUC745EVB) && (!NUC700_UART1_CTSRTS)
+	help
+	   Say Y here if you are using the Nuvoton NUC700EVB
+config NUC700_UART3
+	bool "Uart3 support"
+	default n
+	depends on MACH_NUC710EVB || MACH_NUC740EVB || MACH_NUC745EVB
+	help
+	   Say Y here if you are using the Nuvoton NUC700EVB
+endmenu
 endif

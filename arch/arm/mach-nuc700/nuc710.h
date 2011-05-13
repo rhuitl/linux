@@ -13,6 +13,8 @@
  *
  */
 
+#include "cpu.h"
+
 struct map_desc;
 struct sys_timer;
 
