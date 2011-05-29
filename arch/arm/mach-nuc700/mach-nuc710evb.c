@@ -62,6 +62,14 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO3_UART_TXD3,
 	GPIO4_UART_RXD3,
 #endif
+	/* enable sd */
+	GPIO22_SDCD,
+	GPIO24_SDDAT3,
+	GPIO25_SDDAT2,
+	GPIO26_SDDAT1,
+	GPIO27_SDDAT0,
+	GPIO28_SDCLK,
+	GPIO29_SDCMD,
 
 };
 

@@ -103,6 +103,7 @@
 #define GPIO_BA		NUC700_PA_GPIO
 #define CACHE_BA	NUC700_PA_CACHE
 #define I2C_BA		NUC700_PA_I2C
+#define SD_BA		NUC700_PA_SDH
 
 
 #endif /* __ASM_ARCH_MAP_H */
