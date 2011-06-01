@@ -27,7 +27,7 @@ config CACHE_NUC700
 	  NUC700 has a private cache management controller, if you have
 	  some srange codes bugs, you can disable this to debug.
 
-menu "NUC710 Machines"
+menu "NUC710 Machines support list"
 
 config MACH_NUC710EVB
 	bool "Nuvoton NUC710 Evaluation Board"
@@ -35,19 +35,12 @@ config MACH_NUC710EVB
 	select CPU_NUC710
 	help
 	   Say Y here if you are using the Nuvoton NUC710EVB
-endmenu
-
-menu "NUC745 Machines"
 
 config MACH_NUC745EVB
 	bool "Nuvoton NUC745 Evaluation Board"
 	select CPU_NUC745
 	help
 	   Say Y here if you are using the Nuvoton NUC745EVB
-
-endmenu
-
-menu "NUC740 Machines"
 
 config MACH_NUC740EVB
 	bool "Nuvoton NUC740 Evaluation Board"

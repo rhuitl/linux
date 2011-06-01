@@ -26,6 +26,7 @@
 #include <linux/mtd/partitions.h>
 
 #include "nuc710.h"
+#include <mach/nuc700_sd.h>
 
 static unsigned long nuc710_multi_pin_config[] __initdata = {
 
@@ -71,6 +72,9 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO28_SDCLK,
 	GPIO29_SDCMD,
 
+	/* sd power pin */
+	GPIO23_GPIO23,
+
 };
 
 /*NUC710 evb norflash driver data */
@@ -95,6 +99,24 @@ static struct resource nuc710_flash_resources[] = {
 		.start	=	CONFIG_FLASH_MEM_BASE,
 		.end	=	CONFIG_FLASH_MEM_BASE + CONFIG_FLASH_SIZE - 1,
 		.flags	=	IORESOURCE_MEM,
+	}
+};
+
+/* sd device */
+struct nuc700_sd_port nuc710_mmc_port_data = {
+	.pwr_pin = 23,
+};
+
+static struct resource nuc710_sd_resources[] = {
+	[0] = {
+		.start = NUC700_PA_SDH,
+		.end   = NUC700_PA_SDH + NUC700_SZ_SDH - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_SD,
+		.end   = IRQ_SD,
+		.flags = IORESOURCE_IRQ,
 	}
 };
 
@@ -136,6 +158,10 @@ static void __init nuc710evb_init_board(void)
 	platform_device_register_resndata(NULL, "physmap-flash",  -1,
 				nuc710_flash_resources, ARRAY_SIZE(nuc710_flash_resources) , 
 				&nuc710_flash_data, sizeof(nuc710_flash_data));
+	platform_device_register_resndata(NULL, "nuc700-sd",  -1,
+				nuc710_sd_resources, ARRAY_SIZE(nuc710_sd_resources) , 
+				&nuc710_mmc_port_data, sizeof(nuc710_mmc_port_data));
+
 	nuc710_uart_clk_enable();
 	nuc710_board_init();
 }

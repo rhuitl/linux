@@ -270,6 +270,15 @@ config MMC_AU1X
 
 	  If unsure, say N.
 
+config MMC_NUC700
+	tristate "Nuvoton NUC700 SD Card Interface support"
+	depends on ARCH_NUC700
+	help
+	  This selects the Nuvoton SD card interface.
+	  If you have a NUC710 platform with a MMC slot, say Y or M here.
+
+	  If unsure, say N.
+
 choice
 	prompt "Atmel SD/MMC Driver"
 	depends on AVR32 || ARCH_AT91
