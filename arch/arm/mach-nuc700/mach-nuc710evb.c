@@ -120,6 +120,8 @@ static struct resource nuc710_sd_resources[] = {
 	}
 };
 
+static u64 nuc700_device_sd_dmamask = 0xffffffffUL;
+
 /* Initial serial platform data */
 
 struct plat_serial8250_port nuc710_uart_data[] = {
@@ -152,15 +154,19 @@ void __init nuc710_uart_clk_enable(void) {
 
 static void __init nuc710evb_init_board(void)
 {
+	struct platform_device * pdev;
+
 	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
 				NULL, 0, nuc710_uart_data, sizeof(nuc710_uart_data));
 
 	platform_device_register_resndata(NULL, "physmap-flash",  -1,
 				nuc710_flash_resources, ARRAY_SIZE(nuc710_flash_resources) , 
 				&nuc710_flash_data, sizeof(nuc710_flash_data));
-	platform_device_register_resndata(NULL, "nuc700-sd",  -1,
+	pdev = platform_device_register_resndata(NULL, "nuc700-sd",  -1,
 				nuc710_sd_resources, ARRAY_SIZE(nuc710_sd_resources) , 
 				&nuc710_mmc_port_data, sizeof(nuc710_mmc_port_data));
+	pdev->dev.dma_mask = &nuc700_device_sd_dmamask;
+	pdev->dev.coherent_dma_mask = 0xffffffffUL;
 
 	nuc710_uart_clk_enable();
 	nuc710_board_init();
