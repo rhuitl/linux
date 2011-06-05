@@ -75,7 +75,6 @@ struct nuc700_sd_host {
 	struct mmc_command *cmd;
 	struct mmc_request *request;
 	struct clk *sd_clk;
-	struct timer_list timer;
 	unsigned int dest_buf_index;
 	unsigned int src_buf_index;
 	unsigned int dmabusy;
@@ -234,13 +233,6 @@ static int nuc700_sd_card_detect(struct mmc_host *mmc)
 	host->present = nuc700_sd_read(REG_SDIISR) & (SD_CD);
 	ret = host->present ? 0 : 1;
 	return ret;
-}
-
-static void nuc700_sd_timeout_timer(unsigned long data)
-{
-	struct nuc700_sd_host *host = (void*)data;
-
-	nuc700_sd_card_detect(host->mmc);
 }
 
 /*
@@ -462,7 +454,6 @@ static void nuc700_sd_send_request(struct nuc700_sd_host *host)
 	} else {
 		sd_state = 1;
 		wake_up_interruptible(&sd_wq);
-		del_timer(&host->timer);
 	}
 }
 
@@ -737,7 +728,7 @@ static void sd_host_interrupt(struct nuc700_sd_host *host)
 	}
 	/* card detect interrupt change */
 	if (sd_int_status & CD_IS)
-		mod_timer(&host->timer, jiffies + msecs_to_jiffies(25));
+		mmc_detect_change(host->mmc, msecs_to_jiffies(30));
 
 	nuc700_sd_write(REG_SDIISR, sd_int_status);
 }
@@ -887,8 +878,6 @@ static int __devinit nuc700_sd_probe(struct platform_device *pdev)
 	/* add a thread to check CO, RI, and R2 */
 	kernel_thread(sd_event_thread, host, 0x0);
 
-	setup_timer(&host->timer, nuc700_sd_timeout_timer, (unsigned long)host);
-
 	platform_set_drvdata(pdev, mmc);
 
 	/* enable SD interrupt & select GPIO detect */
@@ -928,7 +917,6 @@ static int __devexit nuc700_sd_remove(struct platform_device *pdev)
 			host->buffer, host->physical_address);
 
 	nuc700_sd_disable();
-	del_timer_sync(&host->timer);
 	mmc_remove_host(mmc);
 	free_irq(host->irq, host);
 
