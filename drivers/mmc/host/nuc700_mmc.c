@@ -951,6 +951,6 @@ module_init(nuc700_sd_init);
 module_exit(nuc700_sd_exit);
 
 MODULE_AUTHOR("Wan ZongShun <mcuos.com@gmail.com>");
-MODULE_DESCRIPTION("NUC900 SD/MMC driver!");
+MODULE_DESCRIPTION("NUC700 SD/MMC driver!");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:nuc700-mmc");
