@@ -104,10 +104,12 @@ int mmc_go_idle(struct mmc_host *host)
 	 * rules that must accommodate non-MMC slaves which this layer
 	 * won't even know about.
 	 */
+#if 0
 	if (!mmc_host_is_spi(host)) {
 		mmc_set_chip_select(host, MMC_CS_HIGH);
 		mmc_delay(1);
 	}
+#endif
 
 	cmd.opcode = MMC_GO_IDLE_STATE;
 	cmd.arg = 0;

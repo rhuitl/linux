@@ -60,6 +60,8 @@
 #define SD_EVENT_RSP_IN			0x00000010
 #define SD_EVENT_RSP2_IN		0x00000100
 
+#define debug //printk
+
 static int sd_event=0, sd_state=0, sd_state_xfer=0, sd_send_cmd=0;
 
 static DECLARE_WAIT_QUEUE_HEAD(sd_event_wq);
@@ -75,6 +77,8 @@ struct nuc700_sd_host {
 	struct mmc_command *cmd;
 	struct mmc_request *request;
 	struct clk *sd_clk;
+	struct timer_list timer;
+	spinlock_t lock;	/* Mutex */
 	unsigned int dest_buf_index;
 	unsigned int src_buf_index;
 	unsigned int dmabusy;
@@ -85,10 +89,11 @@ struct nuc700_sd_host {
 	unsigned int flags;
 	unsigned int dat0_bus_busy;
 	unsigned int* buffer;
+	unsigned int timeout;
 	int src_buf_count;
 	int dest_buf_count;
 	int irq;
-	int present;
+	int absent;
 
 	dma_addr_t physical_address;
 };
@@ -230,8 +235,8 @@ static int nuc700_sd_card_detect(struct mmc_host *mmc)
 	struct nuc700_sd_host *host = mmc_priv(mmc);
 	int ret;
 
-	host->present = nuc700_sd_read(REG_SDIISR) & (SD_CD);
-	ret = host->present ? 0 : 1;
+	host->absent = nuc700_sd_read(REG_SDIISR) & (SD_CD);
+	ret = host->absent ? 0 : 1;
 	return ret;
 }
 
@@ -366,101 +371,93 @@ static void nuc700_sd_update_bytes_xfered(struct nuc700_sd_host *host)
 	}
 }
 
-/*
- * Send a command
- */
-static void nuc700_sd_send_command(struct nuc700_sd_host *host,
-						struct mmc_command *cmd)
+/* sd send command */
+static int nuc700_sd_wait_cmd(void)
 {
-	struct mmc_data *data = cmd->data;
-	unsigned int csr;
+	int start = jiffies, timeout = 100;
 
-	host->cmd = cmd;
-	sd_state = 0;
-	sd_state_xfer = 0;
-
-	csr = ((nuc700_sd_read(REG_SDICR) | CLK_KEEP) & (~SD_CS));
-
-	/* set command code and enable command out */
-	csr = csr | (cmd->opcode << 8) | CO_EN;
-	sd_event |= SD_EVENT_CMD_OUT;
-
-	if (mmc_resp_type(cmd) != MMC_RSP_NONE) {
-		/* set 136 bit response for R2, 48 bit response otherwise */
-		if (mmc_resp_type(cmd) == MMC_RSP_R2) {
-			csr |= R2_EN;
-			sd_event |= SD_EVENT_RSP2_IN;
-		} else {
-			csr |= RI_EN;
-			sd_event |= SD_EVENT_RSP_IN;
-		}
+	while(time_is_after_jiffies(start + timeout)){
+		if((nuc700_sd_read(REG_SDICR) & CO_EN) == 0)
+			return 0;
 	}
 
-	if (data) {
-		host->blksz = data->blksz;
-		host->blocks = data->blocks;
-		data->bytes_xfered = 0x0;
-		host->dest_buf_index = 0x0;
-		host->src_buf_index = 0x0;
-		host->src_buf_count = host->blocks;
-		host->dest_buf_count = 0x0;
-
-		if (data->flags & MMC_DATA_WRITE) {
-			/*
-			 * Handle a write
-			 */
-			nuc700_sd_sg_to_dma(host, data);
-
-			nuc700_sd_write(REG_SDDSA, host->physical_address);
-			nuc700_sd_write(REG_SDBCR, host->blksz);
-		}
-
-	} else {
-		host->blksz = 0;
-		host->blocks = 0;
-	}
-
-	/*
-	 * Set the arguments and send the command
-	 */
-	nuc700_sd_write(REG_SDARG, cmd->arg);
-	nuc700_sd_write(REG_SDICR, csr);
-	sd_send_cmd = 1;
-	wake_up_interruptible(&sd_event_wq);
-
-	if (!(host->flags & FL_SENT_STOP))
-		wait_event_interruptible(sd_wq, (sd_state != 0));
-
-	if (data) {
-		if (data->flags & MMC_DATA_WRITE)
-			nuc700_sd_update_bytes_xfered(host);
-	}
-
-	mmc_request_done(host->mmc, host->request);
+	return -1;
 }
 
-/*
- * Process the request
- */
-static void nuc700_sd_send_request(struct nuc700_sd_host *host)
+static int nuc700_sd_response(int sd_event)
 {
 
+	int start = jiffies, timeout = 200, resp_enbale;
+
+	if (sd_event == SD_EVENT_RSP2_IN) {
+		resp_enbale = R2_EN;
+		nuc700_sd_write(REG_SDGCR, (nuc700_sd_read(REG_SDGCR)&& 0xffffff83) | 0x30);
+	} else
+		resp_enbale = RI_EN;
+
+	nuc700_sd_write(REG_SDICR, resp_enbale);
+
+	while(time_is_after_jiffies(start + timeout)){
+	//while(1){
+		if((nuc700_sd_read(REG_SDICR) & resp_enbale) == 0)
+			return 0;
+	}
+	
+	nuc700_sd_write(REG_SDICR, ~resp_enbale);
+	return -1;
+}
+
+static int nuc700_sd_command(int cmd, int arg)
+{
+	int retval;
+
+	nuc700_sd_write(REG_SDARG, arg);
+	nuc700_sd_write(REG_SDICR, (cmd  << 8) | CO_EN);
+
+	/* wait command complete */
+	retval = nuc700_sd_wait_cmd();
+
+	return retval;
+}
+
+static int nuc700_sd_cmd_and_resp(int cmd, int arg, int sd_event)
+{
+	int retval;
+
+	retval = nuc700_sd_command(cmd, arg);
+
+	if(retval)
+		return retval;
+	
+	retval = nuc700_sd_response(sd_event);
+
+	return retval;
+
+}
+static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
+						struct mmc_command *cmd);
+/*
+ * Process the next step in the request
+ */
+static void nuc700_mmc_process_next(struct nuc700_sd_host *host)
+{
 	if (!(host->flags & FL_SENT_COMMAND)) {
 		host->flags |= FL_SENT_COMMAND;
-		nuc700_sd_send_command(host, host->request->cmd);
-	} else if ((!(host->flags & FL_SENT_STOP)) && host->request->stop) {
+		nuc700_mmc_send_command(host, host->request->cmd);
+	}
+	else if ((!(host->flags & FL_SENT_STOP)) && host->request->stop) {
 		host->flags |= FL_SENT_STOP;
-		nuc700_sd_send_command(host, host->request->stop);
+		nuc700_mmc_send_command(host, host->request->stop);
 	} else {
-		sd_state = 1;
-		wake_up_interruptible(&sd_wq);
+		del_timer(&host->timer);
+		mmc_request_done(host->mmc, host->request);
 	}
 }
 
 /*
  * Handle a command that has been completed
  */
-static void nuc700_sd_completed_command(struct nuc700_sd_host *host,
+void nuc700_sd_completed_command(struct nuc700_sd_host *host,
 							unsigned int status)
 {
 	struct mmc_command *cmd = host->cmd;
@@ -474,16 +471,32 @@ static void nuc700_sd_completed_command(struct nuc700_sd_host *host,
 		/* if not R2 */
 		cmd->resp[0] = (nuc700_sd_read(REG_SDRSP0) << 8) |
 					(nuc700_sd_read(REG_SDRSP1) & 0xff);
+
 		cmd->resp[1] = cmd->resp[2] = cmd->resp[3] = 0;
+
+		debug("CMD %d read reponse R1,R3...value = 0x%x\n",
+						cmd->opcode, cmd->resp[0]);
 	} else if (status & SD_EVENT_RSP2_IN) {
 		/* if R2 */
-		ptr = (unsigned char *)FB0_BASE_ADDR;
-		for (i=0, j=0; j<5; i+=4, j++)
-			tmp[j] = (*(ptr+i)<<24)|(*(ptr+i+1)<<16) |
-						(*(ptr+i+2)<<8)|(*(ptr+i+3));
+		unsigned int tmpBuf[5], i;
+		#define Swap32(val) ((val << 24) | ((val << 8) & 0xff0000) |\
+					((val >> 8) & 0xff00) | (val >> 24))
+
+		for (i=0; i<5; i++)
+			tmpBuf[i] = Swap32(nuc700_sd_read(FB0_BASE_ADDR+i*4));
+
 		for (i=0; i<4; i++)
-			cmd->resp[i] = ((tmp[i] & 0x00ffffff)<<8) |
-						((tmp[i+1] & 0xff000000)>>24);
+				 cmd->resp[i] = ((tmpBuf[i] & 0x00ffffff)<<8) | ((tmpBuf[i+1] & 0xff000000)>>24);
+
+		
+		debug("CMD %d read reponse R2...value = 0x%x,0x%x,0x%x,0x%x \n",
+				 cmd->opcode, cmd->resp[0],cmd->resp[1],
+						cmd->resp[2],cmd->resp[3]);
+
+		if (err & R2_CRC_7) {
+			debug("R2 CRC Check status ok!\n");
+			goto out;
+		}
 	}
 
 	if ((err & CRC_7) == 0) {
@@ -494,24 +507,50 @@ static void nuc700_sd_completed_command(struct nuc700_sd_host *host,
 			cmd->error = -EIO;
 		}
 	} else if ((err & R2_CRC_7) == 0) {
-			cmd->error = -EIO;
+		cmd->error = -EIO;
 	} else {
 		cmd->error = 0;
 	}
+out:
+	nuc700_mmc_process_next(host);
+}
 
-	if (data) {
-		data->bytes_xfered = 0;
+/*
+ * Send a command
+ */
+static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
+						struct mmc_command *cmd)
+{
+	struct mmc_data *data = cmd->data;
+	int ret;
+	host->cmd = cmd;
 
-		if (data->flags & MMC_DATA_READ) {
-			sd_start_sd(host, READ);
-		} else if (data->flags & MMC_DATA_WRITE) {
-			sd_start_dma(host, WRITE);
+	if (mmc_resp_type(cmd) != MMC_RSP_NONE) {
+		/* set 136 bit response for R2, 48 bit response otherwise */
+		if (mmc_resp_type(cmd) == MMC_RSP_R2) {
+			debug("CMD %d needs response R2\n",cmd->opcode);
+			sd_event = SD_EVENT_RSP2_IN;
+			ret = nuc700_sd_cmd_and_resp(cmd->opcode, cmd->arg, sd_event);
+		} else {
+			debug("CMD %d needs response R1,R3,R7....\n",cmd->opcode);
+			sd_event = SD_EVENT_RSP_IN;
+			ret = nuc700_sd_cmd_and_resp(cmd->opcode, cmd->arg, sd_event);
 		}
-
-		wait_event_interruptible(sd_wq_xfer, (sd_state_xfer != 0));
+	} else {
+		debug("CMD %d did not need response\n",cmd->opcode);
+		ret = nuc700_sd_command(cmd->opcode, cmd->arg);
+		sd_event = 0x0;
 	}
 
-	nuc700_sd_send_request(host);
+	if (ret < 0x0) {
+		debug("CMD %d maybe timeout\n",cmd->opcode);
+		host->cmd->error = -ETIMEDOUT;
+		mmc_request_done(host->mmc, host->request);
+	} else {
+		debug("CMD %d finished response and cmd\n",cmd->opcode);
+
+		nuc700_sd_completed_command(host, sd_event);
+	}
 }
 
 /*
@@ -523,110 +562,75 @@ static void nuc700_sd_request(struct mmc_host *mmc, struct mmc_request *mrq)
 	host->request = mrq;
 	host->flags = 0;
 
-	if (nuc700_sd_card_detect(mmc) == 0) {
-		host->request->cmd->error = -ENOMEDIUM;
-		mmc_request_done(host->mmc, host->request);
-	} else
-		nuc700_sd_send_request(host);
+	//mod_timer(&host->timer, jiffies +  msecs_to_jiffies(2000));
+
+	nuc700_mmc_process_next(host);
 }
 
 /*
  * Set the IOS
  */
 
+void nuc700_sd_enable(void) {
+	nuc700_sd_write(REG_SDGIER, EN_ALLINT);
+	nuc700_sd_write(REG_SDIIER, EN_SDINT);
+}
+
+void nuc700_sd_disable(void) {
+
+	nuc700_sd_write(REG_SDGCR, nuc700_sd_read(REG_SDGCR) & (~EN_SDEN));
+	nuc700_sd_write(REG_SDGIER, 0x0);
+	nuc700_sd_write(REG_SDIIER, 0x0);
+}
+
 static void nuc700_sd_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 {
 	int clkdiv;
 	struct nuc700_sd_host *host = mmc_priv(mmc);
-	unsigned long nuc700_sd_master_clock = 80000;
-
-	/* maybe switch power to the card */
-	switch (ios->power_mode) {
-	case MMC_POWER_OFF:
-		gpio_direction_output(host->pwr_pin, 1);
-		break;
-	case MMC_POWER_UP:
-		gpio_direction_output(host->pwr_pin, 0);
-		nuc700_sd_write(REG_SDICR, nuc700_sd_read(REG_SDICR) | CLK74_OE);
-
-		while (nuc700_sd_read(REG_SDICR) & CLK74_OE);
-		break;
-	case MMC_POWER_ON:
-		break;
-	default:
-		WARN_ON(1);
-	}
+	unsigned long nuc700_sd_master_clock = 80000000;
 
 	if (ios->clock == 0) {
 		/* Disable the sd controller */
 		nuc700_sd_write(REG_SDGCR, (nuc700_sd_read(REG_SDGCR) & ~EN_SDEN));
 		clkdiv = 0;
+		/* enable the peripheral clock */
+		clk_disable(host->sd_clk);
 	} else {
 		/* Enable the sd controller */
+		
 		nuc700_sd_write(REG_SDGCR, EN_SDEN);
+		clkdiv = (nuc700_sd_master_clock / ios->clock) - 1;
+		nuc700_sd_write(REG_SDHIIR, clkdiv);
 
-		if ((nuc700_sd_master_clock % ios->clock) == 0)
-			clkdiv = (nuc700_sd_master_clock / ios->clock) - 1;
-		else
-			clkdiv = nuc700_sd_master_clock / ios->clock;
+		/* enable the peripheral clock */
+		clk_enable(host->sd_clk);
 	}
 	if (ios->bus_width == MMC_BUS_WIDTH_4)
-		nuc700_sd_write(REG_SDHIIR, clkdiv | SD_BUSW4B);
+		nuc700_sd_write(REG_SDHIIR, (nuc700_sd_read(REG_SDHIIR)) | SD_BUSW4B);
 	else
-		nuc700_sd_write(REG_SDHIIR, clkdiv | (~SD_BUSW4B) | SD_BUSW1B);
-}
+		nuc700_sd_write(REG_SDHIIR, ((nuc700_sd_read(REG_SDHIIR)) & (~SD_BUSW4B)) | SD_BUSW1B);
+	/* maybe switch power to the card */
+	switch (ios->power_mode) {
+	case MMC_POWER_OFF:
+		gpio_direction_output(host->pwr_pin, 1);	
+		break;
+	case MMC_POWER_UP:
+		gpio_direction_output(host->pwr_pin, 0);
+		break;
+	case MMC_POWER_ON:
 
-/*
- * Handle CO, RI, and R2 event
- */
-static int sd_event_thread(void *_host)
-{
-	struct nuc700_sd_host *host = _host;
-
-	int event = 0;
-	int completed = 0;
-
-	daemonize("sdioeventd");
-
-	for (;;) {
-		wait_event_interruptible(sd_event_wq,
-				(sd_event != SD_EVENT_NONE) && (sd_send_cmd));
-
-		completed = 0;
-		event = sd_event;
-		sd_event = SD_EVENT_NONE;
-		sd_send_cmd = 0;
-		if (event & SD_EVENT_CMD_OUT) {
-			while (1) {
-				if (!(nuc700_sd_read(REG_SDICR) & CO_EN)) {
-					completed = 1;
-					break;
-				}
-			}
+		nuc700_sd_write(REG_SDICR, nuc700_sd_read(REG_SDICR) | CLK74_OE);
+		while (nuc700_sd_read(REG_SDICR) & CLK74_OE){
+			host->absent = nuc700_sd_read(REG_SDIISR) & (SD_CD);
+			if (host->absent)
+				BUG_ON(1);
 		}
 
-		if (event & SD_EVENT_RSP_IN) {
-			while (1) {
-				if (!(nuc700_sd_read(REG_SDICR) & RI_EN)) {
-					completed = 1;
-					break;
-				}
-			}
-		}
-
-		if (event & SD_EVENT_RSP2_IN) {
-			while (1) {
-				if (!(nuc700_sd_read(REG_SDICR) & R2_EN)) {
-					completed = 1;
-					break;
-				}
-			}
-		}
-
-		if (completed)
-			nuc700_sd_completed_command(host, event);
+		break;
+	default:
+		WARN_ON(1);
 	}
-	return 0;
+
 }
 
 static void transferdone(struct nuc700_sd_host *host) {
@@ -699,6 +703,7 @@ static void sd_host_interrupt(struct nuc700_sd_host *host)
 	host->sdbusy = 0x0;
 
 	sd_int_status = nuc700_sd_read(REG_SDIISR);
+
 	/* read sd card to internal buffer finished interrupt */
 	if (sd_int_status & DI_IS) {
 		if (host->src_buf_count > 0x0) {
@@ -728,7 +733,7 @@ static void sd_host_interrupt(struct nuc700_sd_host *host)
 	}
 	/* card detect interrupt change */
 	if (sd_int_status & CD_IS)
-		mmc_detect_change(host->mmc, msecs_to_jiffies(30));
+		mmc_detect_change(host->mmc, msecs_to_jiffies(25));
 
 	nuc700_sd_write(REG_SDIISR, sd_int_status);
 }
@@ -743,22 +748,26 @@ static irqreturn_t nuc700_sd_irq(int irq, void *devid)
 
 	sd_int_status = nuc700_sd_read(REG_SDGISR);
 
-	if (!(sd_int_status & (0x01 << 1))) {
+	if (!(sd_int_status & (0x01 << 0))) {
 		dev_err(host->mmc->parent, "strange, no interupt but it occurs\n");
 		return IRQ_NONE;
 	}
 
 	/* sd host interrupt */
-	if (sd_int_status & (0x01 << 3))
+	if (sd_int_status & (0x01 << 3)) {
+
 		sd_host_interrupt(host);
+	}
 
 	/* dma write interrupt */
-	if (sd_int_status & (0x01 << 4))
+	if (sd_int_status & (0x01 << 4)) {
 		sd_dma_interrupt(host, READ);
+	}
 
 	/* dma read interrupt */
-	if (sd_int_status & (0x01 << 5))
+	if (sd_int_status & (0x01 << 5)) {
 		sd_dma_interrupt(host, WRITE);
+	}
 
 	/* bus error interrupt */
 	if (sd_int_status & (0x01 << 6))
@@ -773,8 +782,31 @@ static irqreturn_t nuc700_sd_irq(int irq, void *devid)
 static int nuc700_sd_get_ro(struct mmc_host *mmc)
 {
 	/* no write protect */
-	return 0;
+	return -ENOSYS;
 }
+
+static void nuc700_timeout_timer(unsigned long data)
+{
+	struct nuc700_sd_host *host;
+
+	host = (struct nuc700_sd_host *)data;
+
+	if (host->request) {
+		dev_err(host->mmc->parent, "Timeout waiting end of packet\n");
+
+		if (host->cmd && host->cmd->data) {
+			host->cmd->data->error = -ETIMEDOUT;
+		} else {
+			if (host->cmd)
+				host->cmd->error = -ETIMEDOUT;
+			else
+				host->request->cmd->error = -ETIMEDOUT;
+		}
+
+		mmc_request_done(host->mmc, host->request);
+	}
+}
+
 
 static const struct mmc_host_ops nuc700_sd_ops = {
 	.request	= nuc700_sd_request,
@@ -782,20 +814,6 @@ static const struct mmc_host_ops nuc700_sd_ops = {
 	.get_ro		= nuc700_sd_get_ro,
 	.get_cd		= nuc700_sd_card_detect,
 };
-
-void nuc700_sd_enable(void) {
-
-	nuc700_sd_write(REG_SDGCR, EN_SDEN);
-	nuc700_sd_write(REG_SDGIER, EN_ALLINT);
-	nuc700_sd_write(REG_SDIIER, EN_SDINT);
-}
-
-void nuc700_sd_disable(void) {
-
-	nuc700_sd_write(REG_SDGCR, nuc700_sd_read(REG_SDGCR) & (~EN_SDEN));
-	nuc700_sd_write(REG_SDGIER, 0x0);
-	nuc700_sd_write(REG_SDIIER, 0x0);
-}
 
 /*
  * Probe for the device
@@ -856,12 +874,9 @@ static int __devinit nuc700_sd_probe(struct platform_device *pdev)
 		goto fail2;
 	}
 
-	/* enable the peripheral clock */
-	clk_enable(host->sd_clk);
-
 	/* allocate the MCI interrupt*/
 	host->irq = platform_get_irq(pdev, 0);
-	ret = request_irq(host->irq, nuc700_sd_irq, 0, mmc_hostname(mmc), host);
+	ret = request_irq(host->irq, nuc700_sd_irq, IRQF_DISABLED, mmc_hostname(mmc), host);
 	if (ret) {
 		dev_dbg(&pdev->dev, "request MCI interrupt failed\n");
 		goto fail1;
@@ -875,15 +890,14 @@ static int __devinit nuc700_sd_probe(struct platform_device *pdev)
 		}
 	}
 
-	/* add a thread to check CO, RI, and R2 */
-	kernel_thread(sd_event_thread, host, 0x0);
+	setup_timer(&host->timer, nuc700_timeout_timer, (unsigned long)host);
 
 	platform_set_drvdata(pdev, mmc);
 
-	/* enable SD interrupt & select GPIO detect */
-	host->present = nuc700_sd_read(REG_SDIISR) & (SD_CD);
 	nuc700_sd_enable();
-	nuc700_sd_write(REG_SDHIIR, SD_CLK | (~SD_BUSW4B) | SD_BUSW1B);
+	
+	spin_lock_init(&host->lock);
+	
 	/* Add host to MMC layer */
 	mmc_add_host(mmc);
 	return 0;

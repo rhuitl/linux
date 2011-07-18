@@ -44,12 +44,12 @@
 #define DAT0_VAL		(0x01 << 9)
 #define DAT0_STS		(0x01 << 8)
 #define SD_CD			(0x01 << 7)
-#define CRC_7			(0X01 << 3)
-#define CRC_16			(0X01 << 4)
-#define R2_CRC_7		(0X01 << 6)
-#define CD_IS			(0X01 << 2)
-#define DO_IS			(0X01 << 1)
-#define DI_IS			(0X01 << 0)
+#define CRC_7			(0x01 << 3)
+#define CRC_16			(0x01 << 4)
+#define R2_CRC_7		(0x01 << 6)
+#define CD_IS			(0x01 << 2)
+#define DO_IS			(0x01 << 1)
+#define DI_IS			(0x01 << 0)
 
 /* REG_SDGCR */
 #define EN_SDEN			(0x01 << 0)
