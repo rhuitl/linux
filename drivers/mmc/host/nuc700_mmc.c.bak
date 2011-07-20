@@ -98,6 +98,8 @@ static unsigned long get_data_from_sdcard_to_inbuffer(struct nuc700_sd_host *hos
 {
 	unsigned long flags, val;
 
+	//debug("CMD %d, data from sdard to inter buffer\n", host->cmd->opcode);
+
 	local_irq_save(flags);
 
 	val = (nuc700_sd_read(REG_SDGCR) & ~(0x07 << 4));
@@ -116,6 +118,8 @@ static unsigned long put_data_from_inbuffer_to_sdcard(struct nuc700_sd_host *hos
 {
 	unsigned long flags, val;
 
+	//debug("CMD %d, data from inter buffer to sdard\n" ,host->cmd->opcode);
+
 	local_irq_save(flags);
 
 	val = (nuc700_sd_read(REG_SDGCR) & ~(0x07 << 8));
@@ -133,6 +137,8 @@ static unsigned long put_data_from_inbuffer_to_sdcard(struct nuc700_sd_host *hos
 static unsigned long get_data_from_inbuffer_to_dmabuf(struct nuc700_sd_host *host)
 {
 	unsigned long flags, val;
+
+	//debug("CMD %d, data from inter buffer to dmabuffer\n" ,host->cmd->opcode);
 
 	local_irq_save(flags);
 
@@ -154,6 +160,8 @@ static unsigned long put_data_from_dmabuf_to_inbuffer(struct nuc700_sd_host *hos
 {
 	unsigned long flags, val;
 
+	//debug("CMD %d, data from dmabuffer TO inter buffer\n" ,host->cmd->opcode);
+
 	local_irq_save(flags);
 
 	val = (nuc700_sd_read(REG_SDGCR) & ~(0x07 << 4));
@@ -174,8 +182,6 @@ static void sd_start_op(struct nuc700_sd_host *host,
 {
 	dma_addr_t current_dma_address;
 	unsigned long val = 0x0, enable_data_tr;
-	unsigned long flags;
-	local_irq_save(flags);
 	
 	if (dma) {
 
@@ -220,7 +226,6 @@ static void sd_start_op(struct nuc700_sd_host *host,
 	}
 
 	nuc700_sd_write(REG_SDGCR, val);
-	local_irq_restore(flags);
 	
 }
 
@@ -464,7 +469,7 @@ static void nuc700_mmc_process_next(struct nuc700_sd_host *host)
 		host->flags |= FL_SENT_STOP;
 		nuc700_mmc_send_command(host, host->request->stop);
 	} else {
-		del_timer(&host->timer);
+		//del_timer(&host->timer);
 		mmc_request_done(host->mmc, host->request);
 	}
 }
@@ -559,17 +564,20 @@ static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
 	if (mmc_resp_type(cmd) != MMC_RSP_NONE) {
 		/* set 136 bit response for R2, 48 bit response otherwise */
 		if (mmc_resp_type(cmd) == MMC_RSP_R2) {
+			//debug("CMD %d needs response R2\n",cmd->opcode);
 			sd_event = SD_EVENT_RSP2_IN;
 			ret = nuc700_sd_cmd_and_resp(cmd->opcode, cmd->arg, sd_event);
 		} else {
+			//debug("CMD %d needs response R1,R3,R7....\n",cmd->opcode);
 			sd_event = SD_EVENT_RSP_IN;
 			ret = nuc700_sd_cmd_and_resp(cmd->opcode, cmd->arg, sd_event);
 		}
 	} else {
+		//debug("CMD %d did not need response\n",cmd->opcode);
 		ret = nuc700_sd_command(cmd->opcode, cmd->arg);
 		sd_event = 0x0;
 	}
-
+#if 1
 	if (data) {
 		
 		host->blksz = data->blksz;
@@ -587,6 +595,8 @@ static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
 			 */
 			nuc700_sd_sg_to_dma(host, data);
 
+			//nuc700_sd_write(REG_SDDSA, host->physical_address);
+			//nuc700_sd_write(REG_SDBCR, host->blksz);
 		} else
 			debug("CMD %d , there is data to read\n",cmd->opcode);
 
@@ -594,14 +604,14 @@ static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
 		host->blksz = 0;
 		host->blocks = 0;
 	}
-
+#endif
 	if (ret < 0x0) {
 		debug("CMD %d maybe timeout\n",cmd->opcode);
 		host->cmd->error = -ETIMEDOUT;
 		mmc_request_done(host->mmc, host->request);
 	} else {
 		debug("CMD %d finished response and cmd\n",cmd->opcode);
-
+		//mdelay(10);
 		nuc700_sd_completed_command(host, sd_event);
 	}
 }
@@ -612,17 +622,12 @@ static void nuc700_mmc_send_command(struct nuc700_sd_host *host,
 static void nuc700_sd_request(struct mmc_host *mmc, struct mmc_request *mrq)
 {
 	struct nuc700_sd_host *host = mmc_priv(mmc);
-	unsigned long flags;
-	
 	host->request = mrq;
 	host->flags = 0;
 
-	spin_lock_irqsave(&host->lock, flags);
-	mod_timer(&host->timer, jiffies +  msecs_to_jiffies(2000));
+	//mod_timer(&host->timer, jiffies +  msecs_to_jiffies(2000));
 
 	nuc700_mmc_process_next(host);
-
-	spin_unlock_irqrestore(&host->lock, flags);
 }
 
 /*
@@ -646,9 +651,6 @@ static void nuc700_sd_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	int clkdiv;
 	struct nuc700_sd_host *host = mmc_priv(mmc);
 	unsigned long nuc700_sd_master_clock = 80000000;
-	unsigned long flags;
-
-	spin_lock_irqsave(&host->lock, flags);
 
 	if (ios->clock == 0) {
 		/* Disable the sd controller */
@@ -693,8 +695,6 @@ static void nuc700_sd_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 		WARN_ON(1);
 	}
 
-	spin_unlock_irqrestore(&host->lock, flags);
-
 }
 
 static void transferdone(struct nuc700_sd_host *host) {
@@ -702,6 +702,7 @@ static void transferdone(struct nuc700_sd_host *host) {
 	debug("CMD %d, data transferdone\n",host->cmd->opcode);
 	//mdelay(10);
 	nuc700_sd_write(REG_SDIISR, 0x07);
+	//nuc700_mmc_handle_data_done(host);
 	sd_state_xfer = 1;
 
 	host->blksz = 0x0;
@@ -872,9 +873,8 @@ static void nuc700_timeout_timer(unsigned long data)
 			else
 				host->request->cmd->error = -ETIMEDOUT;
 		}
-		del_timer(&host->timer);
+
 		mmc_request_done(host->mmc, host->request);
-		//nuc700_sd_request(host->mmc, host->request);
 	}
 }
 
