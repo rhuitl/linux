@@ -53,6 +53,7 @@
 
 /* REG_SDGCR */
 #define EN_SDEN			(0x01 << 0)
+#define SWEST			(0x01 << 1)
 #define SD_WRITE_BUF0		(0x03 << 4)
 #define SD_WRITE_BUF1		(0x07 << 4)
 

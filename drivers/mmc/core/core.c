@@ -96,7 +96,7 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 	struct mmc_command *cmd = mrq->cmd;
 	int err = cmd->error;
 
-#define pr_debug printk
+//#define pr_debug printk
 
 	if (err && cmd->retries && mmc_host_is_spi(host)) {
 		if (cmd->resp[0] & R1_SPI_ILLEGAL_COMMAND)
@@ -1744,17 +1744,17 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
 	 * if the card is being re-initialized, just send it.  CMD52
 	 * should be ignored by SD/eMMC cards.
 	 */
-	//sdio_reset(host);
+	sdio_reset(host);
 	mmc_go_idle(host);
 	mmc_send_if_cond(host, host->ocr_avail);
 
 	/* Order's important: probe SDIO, then SD, then MMC */
-	//if (!mmc_attach_sdio(host))
-	//	return 0;
+	if (!mmc_attach_sdio(host))
+		return 0;
 	if (!mmc_attach_sd(host))
 		return 0;
-	//if (!mmc_attach_mmc(host))
-	//	return 0;
+	if (!mmc_attach_mmc(host))
+		return 0;
 
 	mmc_power_off(host);
 	return -EIO;
