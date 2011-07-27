@@ -126,20 +126,28 @@ static u64 nuc700_device_sd_dmamask = 0xffffffffUL;
 
 /* Initial serial platform data */
 
-struct plat_serial8250_port nuc710_uart_data[] = {
+struct plat_serial8250_port nuc710_uart0_data[] = {
 	NUC700_8250PORT(UART0),
-#ifdef CONFIG_NUC700_UART1
-	NUC700_8250PORT(UART1),
-#endif
-#ifdef CONFIG_NUC700_UART2
-	NUC700_8250PORT(UART2),
-#endif
-#ifdef CONFIG_NUC700_UART3
-	NUC700_8250PORT(UART3),
-#endif
 	{},
 };
-
+#ifdef CONFIG_NUC700_UART1
+struct plat_serial8250_port nuc710_uart1_data[] = {
+	NUC700_8250PORT(UART1),
+	{},
+};
+#endif
+#ifdef CONFIG_NUC700_UART2
+struct plat_serial8250_port nuc710_uart2_data[] = {
+	NUC700_8250PORT(UART2),
+	{},
+};
+#endif
+#ifdef CONFIG_NUC700_UART3
+struct plat_serial8250_port nuc710_uart3_data[] = {
+	NUC700_8250PORT(UART3),
+	{},
+};
+#endif
 void __init nuc710_uart_clk_enable(void) {
 
 #ifdef CONFIG_NUC700_UART1
@@ -159,8 +167,19 @@ static void __init nuc710evb_init_board(void)
 	struct platform_device * pdev;
 
 	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
-				NULL, 0, nuc710_uart_data, sizeof(nuc710_uart_data));
-
+				NULL, 0, nuc710_uart0_data, sizeof(nuc710_uart0_data));
+	#ifdef CONFIG_NUC700_UART1
+		platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM1,
+				NULL, 0, nuc710_uart1_data, sizeof(nuc710_uart1_data));
+	#endif
+		#ifdef CONFIG_NUC700_UART2
+			platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM2,
+				NULL, 0, nuc710_uart2_data, sizeof(nuc710_uart2_data));
+		#endif
+			#ifdef CONFIG_NUC700_UART3
+				platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_FOURPORT,
+				NULL, 0, nuc710_uart3_data, sizeof(nuc710_uart3_data));
+			#endif
 	platform_device_register_resndata(NULL, "physmap-flash",  -1,
 				nuc710_flash_resources, ARRAY_SIZE(nuc710_flash_resources) , 
 				&nuc710_flash_data, sizeof(nuc710_flash_data));
