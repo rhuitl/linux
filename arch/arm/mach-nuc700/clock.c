@@ -44,8 +44,8 @@ void clk_disable(struct clk *clk)
 {
 	unsigned long flags;
 
-	WARN_ON(clk->enabled == 0);
-
+	if (clk->enabled == 0)
+		return;
 	spin_lock_irqsave(&clocks_lock, flags);
 	if (--clk->enabled == 0)
 		(clk->enable)(clk, 0);
