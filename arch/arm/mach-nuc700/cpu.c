@@ -79,9 +79,9 @@ static struct clk_lookup nuc700_clkregs[] = {
 	DEF_CLKLOOK(&clk_rtc, "nuc700-rtc", NULL),
 	DEF_CLKLOOK(&clk_i2c0, "nuc700-i2c-p0", NULL),
 	DEF_CLKLOOK(&clk_i2c1, "nuc700-i2c-p1", NULL),
-	DEF_CLKLOOK(&clk_uart1, "NULL", "uart1"),
-	DEF_CLKLOOK(&clk_uart2, "NULL", "uart2"),
-	DEF_CLKLOOK(&clk_uart3, "NULL", "uart3"),
+	DEF_CLKLOOK(&clk_uart1, NULL, "uart1"),
+	DEF_CLKLOOK(&clk_uart2, NULL, "uart2"),
+	DEF_CLKLOOK(&clk_uart3, NULL, "uart3"),
 	DEF_CLKLOOK(&clk_usi, "nuc700-spi", NULL),
 	DEF_CLKLOOK(&clk_sch0, "nuc700-sch0", NULL),
 	DEF_CLKLOOK(&clk_sch1, "nuc700-sch1", NULL),
@@ -137,9 +137,10 @@ void __init nuc700_uart_clk_enable(int uart_num)
 		name = "uart3";
 
 	struct clk *ck_uart = clk_get(NULL, name);
-	BUG_ON(IS_ERR(ck_uart));
-
-	clk_enable(ck_uart);
+	if (IS_ERR(ck_uart))
+		printk(KERN_WARNING "NUC700 UART%d get clock failed!\n", uart_num);
+	else
+		clk_enable(ck_uart);
 ret:
 ;
 }
