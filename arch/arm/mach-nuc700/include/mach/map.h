@@ -104,6 +104,7 @@
 #define CACHE_BA	NUC700_PA_CACHE
 #define I2C_BA		NUC700_PA_I2C
 #define SD_BA		NUC700_PA_SDH
+#define PS2_BA		NUC700_PA_PS2
 
 
 #endif /* __ASM_ARCH_MAP_H */

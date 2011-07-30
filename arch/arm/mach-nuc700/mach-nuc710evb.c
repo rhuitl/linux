@@ -75,7 +75,10 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 #endif
 	/* sd power pin */
 	//GPIO23_GPIO23,
-
+#ifdef CONFIG_SERIO_NUC700_PS2
+	GPIO9_PS2CLK,
+	GPIO10_PS2DATA,	
+#endif
 
 };
 
@@ -121,8 +124,22 @@ static struct resource nuc710_sd_resources[] = {
 		.flags = IORESOURCE_IRQ,
 	}
 };
-
 static u64 nuc700_device_sd_dmamask = 0xffffffffUL;
+
+/* ps2 device */
+
+static struct resource nuc710_ps2_resources[] = {
+	[0] = {
+		.start = NUC700_PA_PS2,
+		.end   = NUC700_PA_PS2 + NUC700_SZ_PS2 - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_PS2,
+		.end   = IRQ_PS2,
+		.flags = IORESOURCE_IRQ,
+	}
+};
 
 /* Initial serial platform data */
 
@@ -188,6 +205,9 @@ static void __init nuc710evb_init_board(void)
 				&nuc710_mmc_port_data, sizeof(nuc710_mmc_port_data));
 	pdev->dev.dma_mask = &nuc700_device_sd_dmamask;
 	pdev->dev.coherent_dma_mask = 0xffffffffUL;
+
+	platform_device_register_resndata(NULL, "nuc700-ps2",  -1,
+				nuc710_ps2_resources, ARRAY_SIZE(nuc710_ps2_resources), NULL, 0);
 
 	nuc710_uart_clk_enable();
 	nuc710_board_init();
