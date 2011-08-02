@@ -105,6 +105,6 @@
 #define I2C_BA		NUC700_PA_I2C
 #define SD_BA		NUC700_PA_SDH
 #define PS2_BA		NUC700_PA_PS2
-
+#define LCD_BA		NUC700_PA_LCD
 
 #endif /* __ASM_ARCH_MAP_H */

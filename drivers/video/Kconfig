@@ -2093,6 +2093,40 @@ config FB_NUC900_DEBUG
           Turn on debugging messages. Note that you can set/unset at run time
           through sysfs
 
+config FB_NUC700
+        bool "NUC700 LCD framebuffer support"
+        depends on FB && ARCH_NUC700
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
+        ---help---
+          Frame buffer driver for the built-in LCD controller in the Nuvoton
+          NUC700 processor
+
+choice
+	prompt "NUC710 EVB support LCD Types"
+	default NUC700_LCD_TFT_AUO960240
+	depends on FB_NUC700
+	help
+	  Select the desired lcd support types.
+
+	config NUC700_LCD_TFT_AUO960240
+		bool "AUO TFT LCD"
+	config NUC700_LCD_TFT_CASIO 
+		bool "CASIO TFT LCD"
+	config NUC700_LCD_TFT_MTV335
+		bool "MTV335 TFT LCD"
+	config NUC700_LCD_TFT_TOPPOLY240320
+		bool "TOPPOLY TFT LCD"
+endchoice
+
+config FB_NUC900_DEBUG
+        bool "NUC900 lcd debug messages"
+        depends on FB_NUC900
+        help
+          Turn on debugging messages. Note that you can set/unset at run time
+          through sysfs
+
 config FB_SM501
 	tristate "Silicon Motion SM501 framebuffer support"
 	depends on FB && MFD_SM501

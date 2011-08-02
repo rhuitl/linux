@@ -27,6 +27,7 @@
 
 #include "nuc710.h"
 #include <mach/nuc700_sd.h>
+#include <mach/nuc700_fb.h>
 
 static unsigned long nuc710_multi_pin_config[] __initdata = {
 
@@ -79,7 +80,20 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO9_PS2CLK,
 	GPIO10_PS2DATA,	
 #endif
-
+#ifdef CONFIG_FB_NUC700
+	GPIO30_VCLK,
+	GPIO31_VDEN,
+	GPIO32_VSYNC,
+	GPIO33_HSYNC,
+	GPIO34_VD0,
+	GPIO35_VD1,
+	GPIO36_VD2,
+	GPIO37_VD3,
+	GPIO38_VD4,
+	GPIO39_VD5,
+	GPIO40_VD6,
+	GPIO41_VD7,
+#endif
 };
 
 /*NUC710 evb norflash driver data */
@@ -141,6 +155,88 @@ static struct resource nuc710_ps2_resources[] = {
 	}
 };
 
+/* LCD device */
+
+static struct nuc700fb_display  nuc700_lcd_info[] = {
+	/* Giantplus Technology GPM1040A0 320x240 Color TFT LCD */
+	[0] = {/* AUO960240 */
+		.lcdtype	= "tft",
+		.width		= 320,
+		.height		= 240,
+		.xres		= 320,
+		.yres		= 240,
+		.bpp		= 16,
+		.tfttype	= 1,
+		.lcdbus		= 0,
+		.rgbseq		= 3,
+		.pixelseq	= 2,
+	}, [1] = {/* CASIO */
+		.lcdtype	= "tft",
+		.width		= 480,
+		.height		= 240,
+		.xres		= 480,
+		.yres		= 240,
+		.bpp		= 16,
+		.tfttype	= 1,
+		.lcdbus		= 0,
+		.rgbseq		= -1,
+		.pixelseq	= 1,
+	}, [2] = {/* MTV335 */
+		.lcdtype	= "tft",
+		.width		= 320,
+		.height		= 240,
+		.xres		= 320,
+		.yres		= 240,
+		.bpp		= 16,
+		.tfttype	= 0,
+		.lcdbus		= -1,
+		.rgbseq		= -1,
+		.pixelseq	= -1,
+	}, [3] = {/* TOPPOLY240320 */
+		.lcdtype	= "tft",
+		.width		= 240,
+		.height		= 320,
+		.xres		= 240,
+		.yres		= 320,
+		.bpp		= 16,
+		.tfttype	= 0,
+		.lcdbus		= -1,
+		.rgbseq		= -1,
+		.pixelseq	= -1,
+	},
+};
+
+struct nuc700fb_platformdata nuc710_lcd_data = {
+	.displays		= nuc700_lcd_info,
+	.num_displays		= ARRAY_SIZE(nuc700_lcd_info),
+#ifdef CONFIG_NUC700_LCD_TFT_AUO960240
+	.default_display	= 0,
+#endif
+#ifdef CONFIG_NUC700_LCD_TFT_CASIO
+	.default_display	= 1,
+#endif
+#ifdef NUC700_LCD_TFT_MTV335
+	.default_display	= 2,
+#endif
+#ifdef NUC700_LCD_TFT_TOPPOLY240320
+	.default_display	= 3,
+#endif
+};
+
+static struct resource nuc710_lcd_resources[] = {
+	[0] = {
+		.start = NUC700_PA_LCD,
+		.end   = NUC700_PA_LCD + NUC700_SZ_LCD - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = IRQ_LCD,
+		.end   = IRQ_LCD,
+		.flags = IORESOURCE_IRQ,
+	}
+};
+static u64 nuc700_device_lcd_dmamask = 0xffffffffUL;
+
 /* Initial serial platform data */
 
 struct plat_serial8250_port nuc710_uart0_data[] = {
@@ -183,6 +279,7 @@ static void __init nuc710evb_init_board(void)
 {
 	struct platform_device * pdev;
 
+	/* uart 0 1 2 3 register device */
 	platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_PLATFORM,
 				NULL, 0, nuc710_uart0_data, sizeof(nuc710_uart0_data));
 	#ifdef CONFIG_NUC700_UART1
@@ -197,17 +294,29 @@ static void __init nuc710evb_init_board(void)
 				platform_device_register_resndata(NULL, "serial8250", PLAT8250_DEV_FOURPORT,
 				NULL, 0, nuc710_uart3_data, sizeof(nuc710_uart3_data));
 			#endif
+
+	/* Nor flash register device */
 	platform_device_register_resndata(NULL, "physmap-flash",  -1,
 				nuc710_flash_resources, ARRAY_SIZE(nuc710_flash_resources) , 
 				&nuc710_flash_data, sizeof(nuc710_flash_data));
+
+	/* sd register device */
 	pdev = platform_device_register_resndata(NULL, "nuc700-sd",  -1,
 				nuc710_sd_resources, ARRAY_SIZE(nuc710_sd_resources) , 
 				&nuc710_mmc_port_data, sizeof(nuc710_mmc_port_data));
 	pdev->dev.dma_mask = &nuc700_device_sd_dmamask;
 	pdev->dev.coherent_dma_mask = 0xffffffffUL;
 
+	/* ps2 register device */
 	platform_device_register_resndata(NULL, "nuc700-ps2",  -1,
 				nuc710_ps2_resources, ARRAY_SIZE(nuc710_ps2_resources), NULL, 0);
+
+	/* lcd register device */
+	pdev = platform_device_register_resndata(NULL, "nuc700-lcd",  -1,
+				nuc710_lcd_resources, ARRAY_SIZE(nuc710_lcd_resources) , 
+				&nuc710_lcd_data, sizeof(nuc710_lcd_data));
+	pdev->dev.dma_mask = &nuc700_device_lcd_dmamask;
+	pdev->dev.coherent_dma_mask = 0xffffffffUL;
 
 	nuc710_uart_clk_enable();
 	nuc710_board_init();
