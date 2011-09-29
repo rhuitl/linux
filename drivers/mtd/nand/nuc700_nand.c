@@ -142,8 +142,8 @@ static void  nuc700_nand_reset(struct nuc700_nand *nand)
 	int i;
 
 	ENTER();
-	
-	__raw_writeb(0xff, nand->reg + REG_SMCMD);
+
+	write_cmd_reg(0xff);
 
 	for (i=100; i>0; i--);
 
