@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux/arm 2.6.38.2 Kernel Configuration
-# Sun May  1 08:56:18 2011
+# Thu Sep 29 11:07:49 2011
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -236,19 +236,18 @@ CONFIG_CPU_NUC710=y
 CONFIG_CACHE_NUC700=y
 
 #
-# NUC710 Machines
+# NUC700 Machines support option
 #
 CONFIG_MACH_NUC710EVB=y
-
-#
-# NUC745 Machines
-#
 # CONFIG_MACH_NUC745EVB is not set
+# CONFIG_MACH_NUC740EVB is not set
 
 #
-# NUC740 Machines
+# NUC700 UART Using
 #
-# CONFIG_MACH_NUC740EVB is not set
+# CONFIG_NUC700_UART1 is not set
+# CONFIG_NUC700_UART2 is not set
+# CONFIG_NUC700_UART3 is not set
 
 #
 # System MMU
@@ -471,7 +470,8 @@ CONFIG_MTD_CHAR=y
 CONFIG_MTD_BLKDEVS=y
 CONFIG_MTD_BLOCK=y
 # CONFIG_FTL is not set
-# CONFIG_NFTL is not set
+CONFIG_NFTL=y
+CONFIG_NFTL_RW=y
 # CONFIG_INFTL is not set
 # CONFIG_RFD_FTL is not set
 # CONFIG_SSFDC is not set
@@ -519,7 +519,19 @@ CONFIG_MTD_BLOCK2MTD=y
 # CONFIG_MTD_DOC2000 is not set
 # CONFIG_MTD_DOC2001 is not set
 # CONFIG_MTD_DOC2001PLUS is not set
-# CONFIG_MTD_NAND is not set
+CONFIG_MTD_NAND_ECC=y
+# CONFIG_MTD_NAND_ECC_SMC is not set
+CONFIG_MTD_NAND=y
+# CONFIG_MTD_NAND_VERIFY_WRITE is not set
+# CONFIG_MTD_SM_COMMON is not set
+CONFIG_MTD_NAND_MUSEUM_IDS=y
+# CONFIG_MTD_NAND_GPIO is not set
+CONFIG_MTD_NAND_IDS=y
+# CONFIG_MTD_NAND_DISKONCHIP is not set
+# CONFIG_MTD_NAND_NANDSIM is not set
+# CONFIG_MTD_NAND_PLATFORM is not set
+# CONFIG_MTD_ALAUDA is not set
+CONFIG_MTD_NAND_NUC700=y
 # CONFIG_MTD_ONENAND is not set
 
 #
@@ -716,6 +728,7 @@ CONFIG_HW_CONSOLE=y
 # CONFIG_DEVKMEM is not set
 # CONFIG_SERIAL_NONSTANDARD is not set
 # CONFIG_N_GSM is not set
+# CONFIG_NUC700_SC is not set
 
 #
 # Serial drivers

@@ -28,6 +28,7 @@
 #include "nuc710.h"
 #include <mach/nuc700_sd.h>
 #include <mach/nuc700_fb.h>
+#include <mach/nuc700_nand.h>
 
 static unsigned long nuc710_multi_pin_config[] __initdata = {
 
@@ -94,6 +95,10 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO40_VD6,
 	GPIO41_VD7,
 #endif
+#ifdef CONFIG_MTD_NAND_NUC700
+	GPIO9_GPIO9,
+	GPIO10_GPIO10,
+#endif
 };
 
 /*NUC710 evb norflash driver data */
@@ -153,6 +158,23 @@ static struct resource nuc710_ps2_resources[] = {
 		.end   = IRQ_PS2,
 		.flags = IORESOURCE_IRQ,
 	}
+};
+
+/* nand device */
+#define __GPIO10 10 /* FOR alarm gpio,9 10 have been used */
+#define __GPIO9 9
+
+struct nuc710_nand_port nuc710_nand_data = {
+	.gpio_otheruse = __GPIO10,
+	.gpio_checkrb = __GPIO9,
+};
+
+static struct resource nuc710_nand_resources[] = {
+	[0] = {
+		.start = NUC700_PA_EBI,
+		.end   = NUC700_PA_EBI + NUC700_SZ_EBI - 1,
+		.flags = IORESOURCE_MEM,
+	},
 };
 
 /* LCD device */
@@ -311,6 +333,11 @@ static void __init nuc710evb_init_board(void)
 	platform_device_register_resndata(NULL, "nuc700-ps2",  -1,
 				nuc710_ps2_resources, ARRAY_SIZE(nuc710_ps2_resources), NULL, 0);
 
+	/* nand register device */
+	platform_device_register_resndata(NULL, "nuc700-nand",  -1,
+				nuc710_nand_resources, ARRAY_SIZE(nuc710_nand_resources), 
+				&nuc710_nand_data, sizeof(nuc710_nand_data));
+	 
 	/* lcd register device */
 	pdev = platform_device_register_resndata(NULL, "nuc700-lcd",  -1,
 				nuc710_lcd_resources, ARRAY_SIZE(nuc710_lcd_resources) , 

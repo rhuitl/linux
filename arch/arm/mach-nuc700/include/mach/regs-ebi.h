@@ -22,5 +22,7 @@
 #define REG_ROMCON	(EBI_BA + 0x0004)
 #define REG_SDRAMBANK	(EBI_BA + 0x0008)
 #define REG_EXTIO	(EBI_BA + 0x0018)
-
+#define REG_EXTI1	(EBI_BA + 0x001c)
+#define REG_EXTI2	(EBI_BA + 0x0020)
+#define REG_EXTI3	(EBI_BA + 0x0024)
 #endif /*  __ASM_ARCH_REGS_EBI_H */
