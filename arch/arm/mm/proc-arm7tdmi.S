@@ -25,6 +25,7 @@
  * cpu_arm7tdmi_do_idle()
  * cpu_arm7tdmi_dcache_clean_area()
  * cpu_arm7tdmi_switch_mm()
+ * cpu_arm7tdmi_set_pte_ext()
  *
  * These are not required.
  */
@@ -32,6 +33,7 @@ ENTRY(cpu_arm7tdmi_proc_init)
 ENTRY(cpu_arm7tdmi_do_idle)
 ENTRY(cpu_arm7tdmi_dcache_clean_area)
 ENTRY(cpu_arm7tdmi_switch_mm)
+ENTRY(cpu_arm7tdmi_set_pte_ext)
 		mov	pc, lr
 
 /*
