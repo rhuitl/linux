@@ -140,6 +140,9 @@ BOOL                bResult = TRUE;
         RFbRawSetPower(pDevice, pDevice->abyCCKPwrTbl[uConnectionChannel-1], RATE_1M);
     }
     ControlvWriteByte(pDevice,MESSAGE_REQUEST_MACREG,MAC_REG_CHANNEL,(BYTE)(uConnectionChannel|0x80));
+
+	pDevice->byCurrentCh = uConnectionChannel;
+
     return(bResult);
 }
 
