@@ -1750,8 +1750,11 @@ static int dev_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	struct gspca_dev *gspca_dev = file->private_data;
 	struct gspca_frame *frame;
+#ifdef CONFIG_MMU
 	struct page *page;
-	unsigned long addr, start, size;
+	unsigned long addr;
+#endif
+	unsigned long start, size;
 	int i, ret;
 
 	start = vma->vm_start;
