@@ -20,6 +20,7 @@
 #include <mach/map.h>
 #include <mach/mfp-nuc745.h>
 #include <mach/regs-serial.h>
+#include <mach/regs-gcr.h>
 
 #include <linux/mtd/physmap.h>
 #include <linux/mtd/mtd.h>
@@ -137,6 +138,9 @@ static void __init nuc745evb_init(void)
 	nuc745_init_clocks();
 	nuc745_gpio_init();
 	nuc700_mfp_config(ARRAY_AND_SIZE(nuc745_multi_pin_config));
+
+	// Enable USB host mode on the host/device port
+	__raw_writel(0x01, REG_USBTXCON);
 }
 
 MACHINE_START(NUC745EVB, "NUC745EVB")
