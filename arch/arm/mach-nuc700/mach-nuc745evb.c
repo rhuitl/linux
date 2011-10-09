@@ -70,10 +70,20 @@ static unsigned long nuc745_multi_pin_config[] __initdata = {
 static struct mtd_partition nuc745_flash_partitions[] = {
 
 	{
-		.name	=	"Rootfs Partition (2M)",
-		.size	=	0x200000,
-		.offset	=	0x200000,
-	}
+		.name	=	"BOOT_INFO",
+		.size	=	0x10000,
+		.offset	=	0x10000,
+	},
+	{
+		.name	=	"linux (1152 KiB)",
+		.size	=	0x120000,
+		.offset	=	0x20000,
+	},
+	{
+		.name	=	"romfs (2.75 MiB)",
+		.size	=	0x2c0000,
+		.offset	=	0x140000,
+	},
 };
 
 static struct physmap_flash_data nuc745_flash_data = {
