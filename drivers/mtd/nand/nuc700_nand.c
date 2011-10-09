@@ -137,21 +137,6 @@ static int nuc700_check_rb(struct nuc700_nand *nand)
 	return val;
 }
 
-static void  nuc700_nand_reset(struct nuc700_nand *nand)
-{
-	int i;
-
-	ENTER();
-
-	write_cmd_reg(0xff);
-
-	for (i=100; i>0; i--);
-
-	while(!nuc700_check_rb(nand));
-
-	LEAVE();
-}
-
 static int nuc700_nand_devready(struct mtd_info *mtd)
 {
 	struct nuc700_nand *nand;
@@ -172,7 +157,7 @@ static void nuc700_nand_command (struct mtd_info *mtd, unsigned command,
 		int column, int page_addr)
 {
 
-	register struct nand_chip *this = mtd->priv;
+	register struct nand_chip *chip = mtd->priv;
 	struct nuc700_nand *nand;
 	nand = container_of(mtd, struct nuc700_nand, mtd);
 
@@ -192,42 +177,66 @@ static void nuc700_nand_command (struct mtd_info *mtd, unsigned command,
 		}
 		write_cmd_reg(readcmd);
 	}
-
 	write_cmd_reg(command);
 
-	if (column != -1 || page_addr != -1) {
-
-		/* Serially input address */
-		if (column != -1)
-			write_addr_reg(column);
-		if (page_addr != -1){
-			write_addr_reg((unsigned char)(page_addr )& 0xff);	
-			write_addr_reg((unsigned char) ((page_addr>>8 )& 0xff));
-		}	
-			/* One more address cycle for higher density devices */
-		if (mtd->size & 0x0c000000) {
-			//write_addr_reg((unsigned char) ((page_addr >> 16) & 0x0f));
-		}
+	/* Serially input address */
+	if (column != -1) {
+		/* Adjust columns for 16 bit buswidth */
+		if (chip->options & NAND_BUSWIDTH_16)
+			column >>= 1;
+		write_addr_reg(column);
 	}
+	if (page_addr != -1) {
+		write_addr_reg((unsigned char)(page_addr) & 0xff);	
+		write_addr_reg((unsigned char) ((page_addr >> 8) & 0xff));
+		/* One more address cycle for devices > 32MiB */
+		if (chip->chipsize > (32 << 20))
+			write_addr_reg((unsigned char)((page_addr >> 16) & 0x0f));
+	}
+	write_cmd_reg(NAND_CMD_NONE);
 
+	/*
+	 * program and erase have their own busy handlers
+	 * status and sequential in needs no delay
+	 */
 	switch (command) {
-			
+
 	case NAND_CMD_PAGEPROG:
 	case NAND_CMD_ERASE1:
 	case NAND_CMD_ERASE2:
 	case NAND_CMD_SEQIN:
 	case NAND_CMD_STATUS:
-		break;
-	case NAND_CMD_RESET:
-		write_cmd_reg(command);
+		return;
 
-		nuc700_nand_reset(nand);
-		break;
+	case NAND_CMD_RESET:
+		if (chip->dev_ready)
+			break;
+		udelay(chip->chip_delay);
+
+		write_cmd_reg(NAND_CMD_STATUS);
+		write_cmd_reg(NAND_CMD_NONE);
+
+		while(!nuc700_check_rb(nand))
+			;
+		return;
+
+		/* This applies to read commands */
 	default:
-		udelay(this->chip_delay);
-		break;
-}
-	while(!this->dev_ready(mtd));
+		/*
+		 * If we don't have access to the busy pin, we apply the given
+		 * command delay
+		 */
+		if (!chip->dev_ready) {
+			udelay(chip->chip_delay);
+			return;
+		}
+	}
+	/* Apply this short delay always to ensure that we do wait tWB in
+	 * any case on any machine. */
+	ndelay(100);
+
+	while (!chip->dev_ready(mtd))
+		;
 }
 
 
