@@ -951,7 +951,7 @@ static void __init get_mac_address(struct net_device *dev)
 		dev_err(&pdev->dev, "invalid mac address\n");
 }
 
-static int nuc700_ether_setup(struct net_device *dev)
+static int __init nuc700_ether_setup(struct net_device *dev)
 {
 	struct nuc700_ether *ether = netdev_priv(dev);
 

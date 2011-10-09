@@ -58,7 +58,7 @@ static int __init check_gpio_default_from_boot(void) {
 	return j;
 }
 
-void __init nuc700_mfp_config(unsigned long *mfp_cfgs, int num)
+void nuc700_mfp_config(unsigned long *mfp_cfgs, int num)
 {
 	unsigned long flags;
 	int i;
