@@ -1786,7 +1786,7 @@ static int dev_mmap(struct file *file, struct vm_area_struct *vma)
 		ret = -EINVAL;
 		goto out;
 	}
-	if (size != frame->v4l2_buf.length) {
+	if (PAGE_ALIGN(size) != frame->v4l2_buf.length) {
 		PDEBUG(D_STREAM, "mmap bad size");
 		ret = -EINVAL;
 		goto out;
@@ -1798,6 +1798,7 @@ static int dev_mmap(struct file *file, struct vm_area_struct *vma)
 	 */
 	vma->vm_flags |= VM_IO;
 
+#ifdef CONFIG_MMU
 	addr = (unsigned long) frame->data;
 	while (size > 0) {
 		page = vmalloc_to_page((void *) addr);
@@ -1808,6 +1809,7 @@ static int dev_mmap(struct file *file, struct vm_area_struct *vma)
 		addr += PAGE_SIZE;
 		size -= PAGE_SIZE;
 	}
+#endif
 
 	vma->vm_ops = &gspca_vm_ops;
 	vma->vm_private_data = frame;
@@ -1817,6 +1819,45 @@ out:
 	mutex_unlock(&gspca_dev->queue_lock);
 	return ret;
 }
+
+#ifndef CONFIG_MMU
+/*
+ * Get unmapped area.
+ *
+ * NO-MMU arch need this function to make mmap() work correctly.
+ */
+unsigned long queue_get_unmapped_area(struct gspca_dev *dev,
+                                      unsigned long pgoff)
+{
+	struct gspca_frame *buffer;
+	unsigned int i;
+	unsigned long ret;
+
+	mutex_lock(&dev->queue_lock);
+	for (i = 0; i < dev->nframes; ++i) {
+		buffer = &dev->frame[i];
+		if ((buffer->v4l2_buf.m.offset >> PAGE_SHIFT) == pgoff)
+			break;
+	}
+	if (i == dev->nframes) {
+		ret = -EINVAL;
+		goto done;
+	}
+	ret = (unsigned long)buffer->data;// dev-> + buffer->v4l2_buf.m.offset;
+done:
+	mutex_unlock(&dev->queue_lock);
+	return ret;
+}
+
+static unsigned long dev_get_unmapped_area(struct file *file,
+                      unsigned long addr, unsigned long len,
+                      unsigned long pgoff, unsigned long flags)
+{
+	struct gspca_dev *gspca_dev = file->private_data;
+	return queue_get_unmapped_area(gspca_dev, pgoff);
+}
+
+#endif
 
 static int frame_ready_nolock(struct gspca_dev *gspca_dev, struct file *file,
 				enum v4l2_memory memory)
@@ -2122,6 +2163,9 @@ static struct v4l2_file_operations dev_fops = {
 	.mmap = dev_mmap,
 	.unlocked_ioctl = video_ioctl2,
 	.poll	= dev_poll,
+#ifndef CONFIG_MMU
+	.get_unmapped_area = dev_get_unmapped_area,
+#endif
 };
 
 static const struct v4l2_ioctl_ops dev_ioctl_ops = {
