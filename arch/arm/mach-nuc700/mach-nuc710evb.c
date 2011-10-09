@@ -93,11 +93,38 @@ static unsigned long nuc710_multi_pin_config[] __initdata = {
 	GPIO38_VD4,
 	GPIO39_VD5,
 	GPIO40_VD6,
-	GPIO41_VD7,
+	GPIO41_VD7,	
+	GPIO42_VD8,/* port 2 */
+	GPIO43_VD9,
+	GPIO44_VD10,
+	GPIO45_VD11,
+	GPIO46_VD12,
+	GPIO47_VD13,
+	GPIO48_VD14,
+	GPIO49_VD15,
+	GPIO50_VD16,
+	GPIO51_VD17,
 #endif
 #ifdef CONFIG_MTD_NAND_NUC700
 	GPIO9_GPIO9,
 	GPIO10_GPIO10,
+#endif
+#ifdef CONFIG_SND_SOC_NUC700_AC97	
+	GPIO0_AC97_NRESET,
+	GPIO1_AC97_DATAI,
+	GPIO2_AC97_DATAO,
+	GPIO3_AC97_SYNC,
+	GPIO4_AC97_BITCLK,
+#endif
+
+#ifdef CONFIG_I2C_NUC700_P0
+	GPIO11_SCL0,
+	GPIO12_SDA0,	
+#endif
+
+#ifdef CONFIG_I2C_NUC700_P1
+	GPIO13_SCL1,
+	GPIO14_SDA1,	
 #endif
 };
 
@@ -188,10 +215,12 @@ static struct nuc700fb_display  nuc700_lcd_info[] = {
 		.xres		= 320,
 		.yres		= 240,
 		.bpp		= 16,
-		.tfttype	= 1,
-		.lcdbus		= 0,
-		.rgbseq		= 3,
-		.pixelseq	= 2,
+		.tfttype	= 0,
+		.lcdbus		= 1,
+		.rgbseq		= -1,
+		.pixelseq	= -1,
+		/*.rgbseq		= 3,
+		.pixelseq	= 2,*/
 	}, [1] = {/* CASIO */
 		.lcdtype	= "tft",
 		.width		= 480,
@@ -297,6 +326,21 @@ void __init nuc710_uart_clk_enable(void) {
 
 }
 
+struct platform_device nuc700_device_asoc_platform = {
+	.name		= "nuc700-pcm-audio",
+	.id		= -1,
+};
+
+struct platform_device nuc700_device_ac97_platform = {
+	.name		= "ac97-codec",
+	.id		= -1,
+};
+
+static struct platform_device *nuc700_asoc_devices[] __initdata = {
+	&nuc700_device_asoc_platform,
+	&nuc700_device_ac97_platform,
+};
+
 static void __init nuc710evb_init_board(void)
 {
 	struct platform_device * pdev;
@@ -345,8 +389,13 @@ static void __init nuc710evb_init_board(void)
 	pdev->dev.dma_mask = &nuc700_device_lcd_dmamask;
 	pdev->dev.coherent_dma_mask = 0xffffffffUL;
 
+	/* ac97,asoc device register */
+	platform_add_devices(nuc700_asoc_devices, ARRAY_SIZE(nuc700_asoc_devices));
+
 	nuc710_uart_clk_enable();
 	nuc710_board_init();
+	
+	
 }
 
 static void __init nuc710evb_init(void)

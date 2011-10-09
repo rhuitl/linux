@@ -367,11 +367,11 @@ static void nuc700fb_init_specific_lcd(struct fb_info *info, int bursty)
 		#endif
 
 		#ifdef CONFIG_NUC700_LCD_TFT_AUO960240
-			nuc700_lcd_write(REG_LCDTCON1, 0x0003B166);  
-			nuc700_lcd_write(REG_LCDTCON2, 0x03BF00F1);  
-			nuc700_lcd_write(REG_LCDTCON3, 0x00105401);  
-			nuc700_lcd_write(REG_LCDTCON4, 0x00020101);  
-			nuc700_lcd_write(REG_LCDTCON5, 0x0000000E);
+			nuc700_lcd_write(REG_LCDTCON1, 0x00900209);
+		    nuc700_lcd_write(REG_LCDTCON2, 0x014000F0);  
+		    nuc700_lcd_write(REG_LCDTCON3, 0x00200802);  
+		    nuc700_lcd_write(REG_LCDTCON4, 0x000A0101);  
+		    nuc700_lcd_write(REG_LCDTCON5, 0x0000000E); 
 		#endif
 
 		#ifdef CONFIG_NUC700_LCD_TFT_TOPPOLY240320

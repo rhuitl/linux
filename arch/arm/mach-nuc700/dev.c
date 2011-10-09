@@ -94,20 +94,20 @@ static int nuc700_keymap[] = {
 	KEY(0, 2, KEY_C),
 	KEY(0, 3, KEY_D),
 
-	KEY(1, 0, KEY_E),
-	KEY(1, 1, KEY_F),
-	KEY(1, 2, KEY_G),
-	KEY(1, 3, KEY_H),
+	KEY(0, 4, KEY_E),
+	KEY(0, 5, KEY_F),
+	KEY(0, 6, KEY_G),
+	KEY(0, 7, KEY_H),
 
-	KEY(2, 0, KEY_I),
-	KEY(2, 1, KEY_J),
-	KEY(2, 2, KEY_K),
-	KEY(2, 3, KEY_L),
+	KEY(1, 0, KEY_I),
+	KEY(1, 1, KEY_J),
+	KEY(1, 2, KEY_K),
+	KEY(1, 3, KEY_L),
 
-	KEY(3, 0, KEY_M),
-	KEY(3, 1, KEY_N),
-	KEY(3, 2, KEY_O),
-	KEY(3, 3, KEY_P),
+	KEY(1, 4, KEY_M),
+	KEY(1, 5, KEY_N),
+	KEY(1, 6, KEY_O),
+	KEY(1, 7, KEY_P),
 };
 
 static struct matrix_keymap_data nuc700_map_data = {

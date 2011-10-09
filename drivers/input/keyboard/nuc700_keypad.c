@@ -36,11 +36,18 @@
 #define DEBOUNCE_BIT		0x08
 #define KSIZE0			(0x01 << 16)
 #define KSIZE1			(0x01 << 17)
-#define KPSEL			(0x01 << 19)
+#define KPSEL			0//(0x01 << 19)//----> set to 0 ..ya
 #define ENKP			(0x01 << 18)
 
 #define KGET_RAW(n)		(((n) & KEY0R) >> 3)
 #define KGET_COLUMN(n)		((n) & KEY0C)
+
+#define GPIO_CFG        0xFFF83020
+#define GPIO_DIR	0xFFF83024
+#define GPIO_CFG_MASK   0xFFF00000
+#define GPIO_CFG_VALUE  0x000AAAAA
+#define KPICONF_VALUE   0x000405FA
+
 
 #define NUC700_MAX_KEY_NUM	(8 * 8)
 #define NUC700_ROW_SHIFT	3
@@ -96,15 +103,15 @@ static int nuc700_keypad_open(struct input_dev *dev)
 	/* Enable unit clock */
 	clk_enable(keypad->clk);
 
-	val = __raw_readl(keypad->mmio_base + KPI_CONF);
-	val |= (KPSEL | ENKP);
-	val &= ~(KSIZE0 | KSIZE1);
+	//val = __raw_readl(keypad->mmio_base + KPI_CONF);   // ..ya
+	//val |= (KPSEL | ENKP);
+	//val &= ~(KSIZE0 | KSIZE1);
 
-	config = pdata->prescale | (pdata->debounce << DEBOUNCE_BIT);
+	//config = pdata->prescale | (pdata->debounce << DEBOUNCE_BIT);
 
-	val |= config;
+	//val |= config;
 
-	__raw_writel(val, keypad->mmio_base + KPI_CONF);
+	__raw_writel(/*val*/KPICONF_VALUE, keypad->mmio_base + KPI_CONF);
 
 	return 0;
 }
@@ -127,6 +134,7 @@ static int __devinit nuc700_keypad_probe(struct platform_device *pdev)
 	struct resource *res;
 	int irq;
 	int error;
+	u32 old_cfg;
 
 	if (!pdata) {
 		dev_err(&pdev->dev, "no platform data defined\n");
@@ -214,6 +222,12 @@ static int __devinit nuc700_keypad_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, keypad);
+
+	old_cfg=__raw_readl(GPIO_CFG);              // ..ya
+	old_cfg=old_cfg&GPIO_CFG_MASK;
+	old_cfg=old_cfg|GPIO_CFG_VALUE;
+	__raw_writel(old_cfg,GPIO_CFG);
+
 	return 0;
 
 failed_free_irq:

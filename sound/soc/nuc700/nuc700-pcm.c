@@ -35,9 +35,9 @@ static const struct snd_pcm_hardware nuc700_pcm_hardware = {
 	.formats		= SNDRV_PCM_FMTBIT_S16_LE,
 	.channels_min		= 1,
 	.channels_max		= 2,
-	.buffer_bytes_max	= 4*1024,
+	.buffer_bytes_max	= 16*1024,
 	.period_bytes_min	= 1*1024,
-	.period_bytes_max	= 4*1024,
+	.period_bytes_max	= 16*1024,
 	.periods_min		= 1,
 	.periods_max		= 1024,
 };
@@ -324,7 +324,7 @@ static int nuc700_dma_new(struct snd_card *card,
 		card->dev->coherent_dma_mask = DMA_BIT_MASK(32);
 
 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
-		card->dev, 4 * 1024, (4 * 1024) - 1);
+		card->dev, 16 * 1024, (16 * 1024) - 1);
 
 	return 0;
 }
