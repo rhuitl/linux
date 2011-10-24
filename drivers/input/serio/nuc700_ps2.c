@@ -61,6 +61,13 @@ static irqreturn_t nuc700_ps2_rxint(int irq, void *dev_id)
 		scancode = nuc700_ps2_read(ps2if->base + 0x08);
 
 		DBG(ps2if->io->dev.parent, "nuc700_ps2_rxint read scancode = 0x%x!!\n", scancode);
+		
+		if(scancode & 0x100)	//Extend (0xE0)
+			serio_interrupt(ps2if->io, 0xe0, 0);
+			
+		if(scancode & 0x200)	//release (0xF0)
+			serio_interrupt(ps2if->io, 0xf0, 0);
+						
 		serio_interrupt(ps2if->io, scancode & 0xff, 0);
 	}
 
