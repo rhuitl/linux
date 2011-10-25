@@ -19,6 +19,9 @@
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/gfp.h>
+#include <linux/interrupt.h>
+#include <linux/dma-mapping.h>
+#include <linux/io.h>
 
 #define DRV_MODULE_NAME		"nuc700-emc"
 #define DRV_MODULE_VERSION	"0.1"
