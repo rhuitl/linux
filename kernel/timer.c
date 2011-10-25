@@ -54,6 +54,7 @@ u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 EXPORT_SYMBOL(jiffies_64);
 
+#include <linux/printk.h>
 /*
  * per-CPU timer vector definitions:
  */
@@ -608,6 +609,22 @@ void init_timer_deferrable_key(struct timer_list *timer,
 }
 EXPORT_SYMBOL(init_timer_deferrable_key);
 
+static inline void __list_del_check(struct list_head * prev, struct list_head * next)
+{
+	if(!next)
+		printk(KERN_ERR "list_del with next == NULL\n");
+	else if((unsigned int)next > 0xc0000000)
+		printk(KERN_ERR "bogus timer: 0x%08X(next)\n", (unsigned int)next);
+	else
+		next->prev = prev;
+	if(!prev)
+		printk(KERN_ERR "list_del with prev == NULL\n");
+	else if((unsigned int)prev > 0xc0000000)
+		printk(KERN_ERR "bogus timer: 0x%08X (prev)\n", (unsigned int)prev);
+	else
+		prev->next = next;
+}
+
 static inline void detach_timer(struct timer_list *timer,
 				int clear_pending)
 {
@@ -615,7 +632,7 @@ static inline void detach_timer(struct timer_list *timer,
 
 	debug_deactivate(timer);
 
-	__list_del(entry->prev, entry->next);
+	__list_del_check(entry->prev, entry->next);
 	if (clear_pending)
 		entry->next = NULL;
 	entry->prev = LIST_POISON2;
