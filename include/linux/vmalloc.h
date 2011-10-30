@@ -48,6 +48,7 @@ extern void __init vmalloc_init(void);
 static inline void vmalloc_init(void)
 {
 }
+extern void *vcoalesce(struct page **, unsigned int, unsigned long, pgprot_t);
 #endif
 
 extern void *vmalloc(unsigned long size);

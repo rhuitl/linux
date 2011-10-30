@@ -27,6 +27,15 @@ MODULE_AUTHOR("Manuel Estrada Sainz");
 MODULE_DESCRIPTION("Multi purpose firmware loading support");
 MODULE_LICENSE("GPL");
 
+/*
+ * NOMMU mode can't provide vmap() as there's no MMU to do the virtual mapping.
+ * Coalesce the data into a big buffer instead.
+ */
+#ifndef CONFIG_MMU
+#define vmap(pg, c, f, pr)	vcoalesce(pg, c, f, pr)
+#endif
+
+
 /* Builtin firmware support */
 
 #ifdef CONFIG_FW_LOADER

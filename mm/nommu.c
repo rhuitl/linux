@@ -475,6 +475,30 @@ int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 EXPORT_SYMBOL(vm_insert_page);
 
 /*
+ * NOMMU mode can't provide vmap() as there's no MMU to do the virtual mapping.
+ * Provide a facility to coalesce the data into a big buffer instead.
+ */
+void *vcoalesce(struct page **pages, unsigned int count,
+		unsigned long flags, pgprot_t prot)
+{
+	unsigned int i;
+	void *new_map, *page_data;
+
+	new_map = kmalloc(count << PAGE_SHIFT, GFP_KERNEL);
+	if (!new_map)
+		return NULL;
+
+	for (i = 0; i < count; ++i) {
+		page_data = kmap(pages[i]);
+		memcpy(new_map + (i << PAGE_SHIFT), page_data, PAGE_SIZE);
+		kunmap(page_data);
+	}
+
+	return new_map;
+}
+EXPORT_SYMBOL(vcoalesce);
+
+/*
  *  sys_brk() for the most part doesn't need the global kernel
  *  lock, except when an application is doing something nasty
  *  like trying to un-brk an area that has already been mapped
