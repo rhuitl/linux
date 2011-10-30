@@ -193,11 +193,14 @@ static ssize_t firmware_loading_show(struct device *dev,
 static void firmware_free_data(const struct firmware *fw)
 {
 	int i;
-	vunmap(fw->data);
-	if (fw->pages) {
-		for (i = 0; i < PFN_UP(fw->size); i++)
-			__free_page(fw->pages[i]);
-		kfree(fw->pages);
+	if(fw->data)
+		vunmap(fw->data);
+	if(fw->pages) {
+		if (fw->pages) {
+			for (i = 0; i < PFN_UP(fw->size); i++)
+				__free_page(fw->pages[i]);
+			kfree(fw->pages);
+		}
 	}
 }
 
