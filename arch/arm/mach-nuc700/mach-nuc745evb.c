@@ -84,6 +84,11 @@ static struct mtd_partition nuc745_flash_partitions[] = {
 		.size	=	0x2c0000,
 		.offset	=	0x140000,
 	},
+	{
+		.name	=	"config (64 KiB)",
+		.size	=	0x10000,
+		.offset	=	0x3F0000,
+	},
 };
 
 static struct physmap_flash_data nuc745_flash_data = {
