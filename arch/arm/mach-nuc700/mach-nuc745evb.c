@@ -75,17 +75,17 @@ static struct mtd_partition nuc745_flash_partitions[] = {
 		.offset	=	0x10000,
 	},
 	{
-		.name	=	"linux (1152 KiB)",
-		.size	=	0x120000,
+		.name	=	"linux",
+		.size	=	0x130000,
 		.offset	=	0x20000,
 	},
 	{
-		.name	=	"romfs (2.75 MiB)",
-		.size	=	0x2c0000,
-		.offset	=	0x140000,
+		.name	=	"romfs",
+		.size	=	0x2b0000,
+		.offset	=	0x150000,
 	},
 	{
-		.name	=	"config (64 KiB)",
+		.name	=	"config",
 		.size	=	0x10000,
 		.offset	=	0x3F0000,
 	},
