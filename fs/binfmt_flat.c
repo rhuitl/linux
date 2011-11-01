@@ -357,9 +357,12 @@ calc_reloc(unsigned long r, struct lib_info *p, int curid, int internalp)
 	text_len = p->lib_list[id].text_len;
 
 	if (!flat_reloc_valid(r, start_brk - start_data + text_len)) {
-		printk("BINFMT_FLAT: reloc outside program 0x%x (0 - 0x%x/0x%x)",
+		printk("BINFMT_FLAT: reloc outside program 0x%x (0 - 0x%x/0x%x), trying to continue\n",
 		       (int) r,(int)(start_brk-start_data+text_len),(int)text_len);
-		goto failed;
+
+		//goto failed;
+		// Don't bail out as suggested by Paul Dale:
+		//   http://permalink.gmane.org/gmane.linux.uclinux.devel/12484
 	}
 
 	if (r < text_len)			/* In text segment */
